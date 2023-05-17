@@ -1,4 +1,4 @@
-#include "empty_class.hpp"
+#include "delaunay.hpp"
 
 int main()
 {

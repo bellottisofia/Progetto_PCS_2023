@@ -1,4 +1,4 @@
-list(APPEND delaunay_test_headers ${CMAKE_CURRENT_SOURCE_DIR}/test_empty.hpp)
+list(APPEND delaunay_test_headers ${CMAKE_CURRENT_SOURCE_DIR}/test.hpp)
 
 list(APPEND delaunay_test_includes ${CMAKE_CURRENT_SOURCE_DIR})
 

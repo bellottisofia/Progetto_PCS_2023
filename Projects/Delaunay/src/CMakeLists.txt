@@ -1,6 +1,7 @@
-list(APPEND delaunay_headers ${CMAKE_CURRENT_SOURCE_DIR}/empty_class.hpp)
+list(APPEND delaunay_headers ${CMAKE_CURRENT_SOURCE_DIR}/delaunay.hpp)
+list(APPEND delaunay_headers ${CMAKE_CURRENT_SOURCE_DIR}/sorting.hpp)
 
-list(APPEND delaunay_sources ${CMAKE_CURRENT_SOURCE_DIR}/empty_class.cpp)
+list(APPEND delaunay_sources ${CMAKE_CURRENT_SOURCE_DIR}/delaunay.cpp)
 
 list(APPEND delaunay_includes ${CMAKE_CURRENT_SOURCE_DIR})
 
