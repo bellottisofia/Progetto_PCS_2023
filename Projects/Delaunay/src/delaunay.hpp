@@ -87,7 +87,7 @@ Point operator+(const Point& p1, const Point& p2)
 
   class Triangle {
       Point p1, p2, p3;
-
+      findAdjacentTriangles(const std::vector<Triangle>& triangles);
 
   // Function to calculate the area of a triangle
   double calculateArea(const Point& p1, const Point& p2, const Point& p3) {
@@ -112,5 +112,28 @@ Point operator+(const Point& p1, const Point& p2)
 
 
 bool isPointInPolygon(const Point& Q, const vector<Triangle>& triangulation);
-  }
+
+
+
+// Triangulation data structure
+class Triangulation {
+public:
+    // Constructor
+    Triangulation(const std::vector<Triangle>& initialTriangles);
+    buildAdjacency();
+    updateAdjacency();
+
+
+
+
+private:
+    std::vector<Triangle> triangles;
+    std::map<Triangle, std::vector<Triangle>> adjacency;
+
+
+};
+
+
+
+
 #endif // __DELAUNAY_H

@@ -15,37 +15,79 @@ double area(const Point& a, const Point& b, const Point& c) {
     return abs(cross(b - a, c - a)) / 2;
 }
 
-Triangle findMaxAreaTriangle(const std::vector<Point>& points) {
-    // Caso base: se ci sono meno di 3 punti, restituisci un triangolo vuoto
-    if (points.size() < 3) {
-        return Triangle();
+
+
+
+double findMaximumTriangleArea(const std::vector<Point>& points, int start, int end) {
+    if (start == end) {
+        return 0.0;  // Nessun triangolo in un singolo punto
+    }
+    if (end - start == 1) {
+        return 0.0;  // Nessun triangolo in due punti
+    }
+    if (end - start == 2) {
+        // Caso base: calcolo l'area del triangolo con i tre punti
+        return calculateTriangleArea(points[start], points[start + 1], points[start + 2]);
     }
 
-    // Caso base: se ci sono esattamente 3 punti, restituisci il triangolo formato da essi
-    if (points.size() == 3) {
-        return Triangle(points[0], points[1], points[2]);
+    // Calcolo il punto mediano
+    int mid = (start + end) / 2;
+
+    // Calcolo l'area massima del triangolo a sinistra
+    double leftMaxArea = findMaximumTriangleArea(points, start, mid + 1);
+
+    // Calcolo l'area massima del triangolo a destra
+    double rightMaxArea = findMaximumTriangleArea(points, mid, end);
+
+    // Calcolo l'area massima del triangolo che attraversa la divisione
+    double crossMaxArea = 0.0;
+    for (int i = mid - 1; i >= start; i--) {
+        for (int j = mid + 1; j < end; j++) {
+            double area = calculateTriangleArea(points[i], points[mid], points[j]);
+            if (area > crossMaxArea) {
+                crossMaxArea = area;
+            }
+        }
     }
 
-    // Divide: dividi il vettore di punti a metà
-    size_t mid = points.size() / 2;
-    std::vector<Point> leftPoints(points.begin(), points.begin() + mid);
-    std::vector<Point> rightPoints(points.begin() + mid, points.end());
-
-    // Conquer: trova il triangolo di massima area nelle due metà del vettore
-    Triangle leftTriangle = findMaxAreaTriangle(leftPoints);
-    Triangle rightTriangle = findMaxAreaTriangle(rightPoints);
-
-    // Combine: confronta le aree dei triangoli e restituisci quello di massima area
-    double leftArea = leftTriangle.calculateArea();
-    double rightArea = rightTriangle.calculateArea();
-    if (leftArea >= rightArea) {
-        return leftTriangle;
-    } else {
-        return rightTriangle;
-    }
+    // Restituisco l'area massima tra le tre opzioni
+    return std::max(leftMaxArea, std::max(rightMaxArea, crossMaxArea));
 }
 
+double findMaximumTriangleArea(const std::vector<Point>& points) {
+    return findMaximumTriangleArea(points, 0, points.size());
+}
 
+//opzione se ho punti ordinati
+double findMaximumTriangleArea(const std::vector<Point>& points) {
+    int n = points.size();
+    double maxArea = 0.0;
+
+    for (int i = 0; i < n - 2; i++) {
+        int j = i + 1;
+        int k = j + 1;
+
+        while (k < n) {
+            double area = calculateTriangleArea(points[i], points[j], points[k]);
+            maxArea = std::max(maxArea, area);
+            k++;
+        }
+    }
+
+    return maxArea;
+}
+// Find adjacent triangles
+    std::vector<Triangle> findAdjacentTriangles(const std::vector<Triangle>& triangles) const {
+        std::vector<Triangle> adjacentTriangles;
+
+        for (const auto& triangle : triangles) {
+            if (triangle != *this && areAdjacent(triangle)) {
+                adjacentTriangles.push_back(triangle);
+            }
+        }
+
+        return adjacentTriangles;
+    }
 Point Triangle::getCircumcircle() const {
     // Compute the midpoints of two sides of the triangle
     Point ab = (a + b) / 2.0;
@@ -121,37 +163,7 @@ bool isPointInsideTriangle(const Point& Q, const Triangle& T) {
     return (std::abs(angleSum - 360.0) < Point::geometricTol);
 }
 
-/*
-void sortTriangleVerticesCounterclockwise(Point& v1, Point& v2, Point& v3) {
-    // Calcola il centroide del triangolo
-    double centroidX = (v1.x + v2.x + v3.x) / 3.0;
-    double centroidY = (v1.y + v2.y + v3.y) / 3.0;
 
-    // Calcola gli angoli dei vertici rispetto al centroide
-    double angle1 = atan2(v1.y - centroidY, v1.x - centroidX);
-    double angle2 = atan2(v2.y - centroidY, v2.x - centroidX);
-    double angle3 = atan2(v3.y - centroidY, v3.x - centroidX);
-
-    // Ordina i vertici in base agli angoli in senso antiorario
-    if (angle1 < angle2 && angle1 < angle3) {
-        // v1 è il vertice con l'angolo più piccolo
-        return;
-    } else if (angle2 < angle1 && angle2 < angle3) {
-        // Scambia v1 e v2
-        std::swap(v1, v2);
-    } else {
-        // Scambia v1 e v3
-        std::swap(v1, v3);
-    }
-
-    // Ora v1 ha l'angolo più piccolo, ordina v2 e v3 in senso antiorario rispetto a v1
-    double crossProduct = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
-    if (crossProduct < 0.0) {
-        // Scambia v2 e v3
-        std::swap(v2, v3);
-    }
-}
-*/
 bool SortVertices(const Point& p1,
                const Point& p2,
                const Point& p3)
@@ -229,7 +241,8 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
         double d4 = direction(p1, q1, q2);
 
         // Controlla se i segmenti si intersecano
-        if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
+        if ((d1 > 0.0 && d2 < 0.0 || d1 < 0.0 && d2 > 0.0) && (d3 > 0.0 && d4 < 0.0 || d3 < 0.0 && d4 > 0.0))
+
          {
             return true;
         } else if (d1 == 0 && isPointOnSegment(p2, q2, p1)) {
@@ -312,6 +325,8 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
         }
     }
 
+    Triangulation::Triangulation(const std::vector<Triangle>& initialTriangles)
+            : triangles(initialTriangles) {}
 /*
  * // Tipo per l'identificatore dei triangoli
 using TriangleId = size_t;
