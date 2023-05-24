@@ -1,10 +1,10 @@
 #include "delaunay.hpp"
 
 int main()
-{
-  ProjectLibrary::Empty empty;
+{/*
+  ProjectLibrary::delunay delunay;
 
-  empty.Show();
-
+  delunay.Show();
+*/
   return 0;
 }

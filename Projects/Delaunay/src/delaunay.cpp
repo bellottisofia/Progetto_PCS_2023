@@ -3,10 +3,24 @@
 namespace ProjectLibrary
 {
 
-
-
-
-
+Point::Point(const double& x, const double& y, const unsigned int& id)
+    : x(x), y(y), id(id)
+{
+}
+Point::Point(const Point& p)
+    : x(p.x), y(p.y), id(p.id)
+{
+}
+Point& Point::operator=(const Point& other) {
+  if (this != &other) {
+    // Effettua una copia profonda dei membri
+    x = other.x;
+    y = other.y;
+    id = other.id;
+  }
+  return *this;
+}
+/*
 double cross(const Point& a, const Point& b) {
     return a.x * b.y - a.y * b.x;
 }
@@ -14,52 +28,173 @@ double cross(const Point& a, const Point& b) {
 double area(const Point& a, const Point& b, const Point& c) {
     return abs(cross(b - a, c - a)) / 2;
 }
+*/
+Triangle::Triangle(const Point& point1, const Point& point2, const Point& point3)
+            : p1(point1), p2(point2), p3(point3) {}
+/*
+double calculateArea(){
+    return 0.5 * ((p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x));
+}
+*/
+double Triangle::calculateArea(){
+    return abs(0.5 * ((p1.x - p3.x) * (p2.y - p3.y) - (p1.y - p3.y) * (p2.x - p3.x)));
+}
+bool Triangle::IsVerticesSort()
+{
+  double dx1 = p2.x - p1.x;
+  double dy1 = p2.y - p1.y;
+  double dx2 = p3.x - p1.x;
+  double dy2 = p3.y - p1.y;
 
-
-
-
-double findMaximumTriangleArea(const std::vector<Point>& points, int start, int end) {
-    if (start == end) {
-        return 0.0;  // Nessun triangolo in un singolo punto
+  if (dx1 * dy2 > dy1 * dx2)
+    return true;
+  else if (dx1 * dy2 < dy1 * dx2)
+    return false;
+  else
+    return (dx1 * dx2 + dy1 * dy2 >= 0);
+}
+void Triangle::SortVertices(){
+    if (IsVerticesSort()==true)
+    return;
+    else
+    {
+        Point temp = p2;
+            p2 = p3;
+            p3 = temp;
     }
-    if (end - start == 1) {
-        return 0.0;  // Nessun triangolo in due punti
+}
+
+bool Triangle::isVertexShared(const Point& vertex)  {
+    return (vertex == p1) || (vertex == p2) || (vertex == p3);
+}
+
+bool Triangle::isAdjacent(const Triangle& other) {
+    int sharedVertices = 0;
+
+    if (isVertexShared(other.p1))
+        sharedVertices++;
+    if (isVertexShared(other.p2))
+        sharedVertices++;
+    if (isVertexShared(other.p3))
+        sharedVertices++;
+
+    if( sharedVertices >= 2){
+        return true;
     }
-    if (end - start == 2) {
-        // Caso base: calcolo l'area del triangolo con i tre punti
-        return calculateTriangleArea(points[start], points[start + 1], points[start + 2]);
+    else
+    {return false;
     }
 
-    // Calcolo il punto mediano
-    int mid = (start + end) / 2;
+}
 
-    // Calcolo l'area massima del triangolo a sinistra
-    double leftMaxArea = findMaximumTriangleArea(points, start, mid + 1);
 
-    // Calcolo l'area massima del triangolo a destra
-    double rightMaxArea = findMaximumTriangleArea(points, mid, end);
 
-    // Calcolo l'area massima del triangolo che attraversa la divisione
-    double crossMaxArea = 0.0;
-    for (int i = mid - 1; i >= start; i--) {
-        for (int j = mid + 1; j < end; j++) {
-            double area = calculateTriangleArea(points[i], points[mid], points[j]);
-            if (area > crossMaxArea) {
-                crossMaxArea = area;
+
+
+
+void Triangle::addAdjacentTriangle(const Triangle* triangle) {
+    adjacentTriangles.push_back(triangle);
+    triangle->adjacentTriangles.push_back(this);
+}
+
+
+void Triangle::addAdjacentTriangles(std::vector<Triangle>& triangles) {
+    const int numTriangles = triangles.size();
+    for (int i = 0; i < numTriangles; ++i) {
+
+            if (isAdjacent(triangles[i])) {
+                neighbors.push_back(&triangles[i]);
+
+
+                // Stampa le informazioni aggiunte
+                std::cout << "Aggiunto triangolo adiacente: " << triangles[i] << std::endl;
             }
         }
     }
 
-    // Restituisco l'area massima tra le tre opzioni
-    return std::max(leftMaxArea, std::max(rightMaxArea, crossMaxArea));
+
+
+std::vector<Triangle*>& Triangle::getAdjacentTriangles() {
+        return neighbors;
 }
 
-double findMaximumTriangleArea(const std::vector<Point>& points) {
-    return findMaximumTriangleArea(points, 0, points.size());
+void Triangle::printAdjacentTriangles()  {
+    std::cout << "Triangoli adiacenti (" << neighbors.size() << "):" << std::endl;
+    for (const Triangle* neighbor : neighbors) {
+        std::cout << *neighbor << std::endl;
+    }
 }
 
+
+
+Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int start, int end) {
+        if (start == end) {
+            // Non ci sono abbastanza punti per formare un triangolo
+            return Triangle(Point(0, 0, 0), Point(0, 0, 0), Point(0, 0, 0));
+        }
+        if (end - start == 1) {
+            // Nessun triangolo in due punti
+            return Triangle(Point(0, 0, 0), Point(0, 0, 0), Point(0, 0, 0));
+        }
+        if (end - start == 2) {
+            // Calcolo l'area del triangolo con i tre punti
+            return Triangle(points[start], points[start + 1], points[start + 2]);
+        }
+
+        // Calcolo il punto mediano
+        int mid = (start + end) / 2;
+
+        // Calcolo l'area massima del triangolo a sinistra
+        Triangle leftMaxTriangle = findMaximumTriangleArea(points, start, mid);
+
+        // Calcolo l'area massima del triangolo a destra
+        Triangle rightMaxTriangle = findMaximumTriangleArea(points, mid + 1, end);
+
+        // Calcolo l'area massima del triangolo che attraversa la divisione
+        double crossMaxArea = 0.0;
+        Triangle crossMaxTriangle(Point(0, 0, 0), Point(0, 0, 0), Point(0, 0, 0));
+        for (int i = mid; i >= start; i--) {
+            for (int j = mid + 1; j <= end; j++) {
+                double area = crossMaxTriangle.calculateArea();
+                if (area > crossMaxArea) {
+                    crossMaxArea = area;
+                    crossMaxTriangle = Triangle(points[i], points[mid], points[j]);
+                }
+            }
+        }
+
+        // Restituisco il triangolo con l'area massima tra le tre opzioni
+        if (leftMaxTriangle.calculateArea() >= rightMaxTriangle.calculateArea() && leftMaxTriangle.calculateArea() >= crossMaxArea) {
+            return leftMaxTriangle;
+        } else if (rightMaxTriangle.calculateArea() >= leftMaxTriangle.calculateArea() && rightMaxTriangle.calculateArea() >= crossMaxArea) {
+            return rightMaxTriangle;
+        } else {
+            return crossMaxTriangle;
+        }
+    }
+    Triangle Triangle::findMaximumTriangle(const std::vector<Point>& points) {
+        return findMaximumTriangleArea(points, 0, points.size() - 1);
+    }
+
+
+    double Triangle::calculateAngle(const Point& A, const Point& B, const Point& C) {
+        double ABx = B.x - A.x;
+            double ABy = B.y - A.y;
+            double BCx = C.x - B.x;
+            double BCy = C.y - B.y;
+
+            double angleRadians = std::atan2(ABx * BCy - ABy * BCx, ABx * BCx + ABy * BCy);
+            if (angleRadians < 0) {
+                angleRadians += 2 * M_PI;  // Assicura che l'angolo sia compreso tra 0 e 2*pi
+            }
+            double angleDegrees = angleRadians * 180.0 / M_PI;
+
+            return angleDegrees;
+        }
+
+/*
 //opzione se ho punti ordinati
-double findMaximumTriangleArea(const std::vector<Point>& points) {
+double findMaximumTriangleAreaOrdinatesPoints(const std::vector<Point>& points) {
     int n = points.size();
     double maxArea = 0.0;
 
@@ -76,53 +211,19 @@ double findMaximumTriangleArea(const std::vector<Point>& points) {
 
     return maxArea;
 }
-// Find adjacent triangles
-    std::vector<Triangle> findAdjacentTriangles(const std::vector<Triangle>& triangles) const {
-        std::vector<Triangle> adjacentTriangles;
+*/
 
-        for (const auto& triangle : triangles) {
-            if (triangle != *this && areAdjacent(triangle)) {
-                adjacentTriangles.push_back(triangle);
-            }
-        }
 
-        return adjacentTriangles;
-    }
-Point Triangle::getCircumcircle() const {
-    // Compute the midpoints of two sides of the triangle
-    Point ab = (a + b) / 2.0;
-    Point bc = (b + c) / 2.0;
-    // Compute the direction vectors of the sides
-    Vector u = b - a;
-    Vector v = c - b;
-    // Compute the perpendicular bisectors of the sides
-    Vector pu = u.perpendicular();
-    Vector pv = v.perpendicular();
-    // Compute the intersection of the perpendicular bisectors
-    Point center = intersectionPoint(Line(ab, pu), Line(bc, pv));
-    // Compute the radius of the circumcircle
-    double radius = center.distanceTo(a);
-    // Return the circumcircle
-    return Circle(center, radius);
-}
 
 /*
- * Per verificare se un punto Q è esterno al quadrato circoscritto o al cerchio circoscritto di un triangolo T,
- * possiamo utilizzare le seguenti considerazioni:
+ * Per verificare se un punto Q è esterno al cerchio circoscritto di un triangolo T,
 
-Quadrato circoscritto:
-
-Troviamo il punto più a sinistra (minX), il punto più a destra (maxX), il punto più in alto (maxY) e
-il punto più in basso (minY) tra i vertici del triangolo T.
-Se il punto Q ha una coordinata x minore di minX o maggiore di maxX,
- o una coordinata y minore di minY o maggiore di maxY, allora il punto Q è esterno al quadrato circoscritto.
-Cerchio circoscritto:
 
 Calcoliamo il centro del cerchio circoscritto (xc, yc) utilizzando le coordinate dei vertici del triangolo T.
 Calcoliamo il raggio del cerchio circoscritto (r) utilizzando le coordinate dei vertici del triangolo T.
 Calcoliamo la distanza tra il centro del cerchio e il punto Q utilizzando la formula della distanza euclidea.
 Se la distanza tra il centro del cerchio e il punto Q è maggiore del raggio r, allora il punto Q è esterno al cerchio circoscritto.
- */
+
 
 bool isPointInsideSquare(const Point& Q, const Triangle& T) {
     double minX = std::min({ T.a.x, T.b.x, T.c.x });
@@ -133,8 +234,9 @@ bool isPointInsideSquare(const Point& Q, const Triangle& T) {
     return (Q.x >= minX && Q.x <= maxX && Q.y >= minY && Q.y <= maxY);
 }
 
-
+*/
 //usa il determinante per controllare se Q è dentro il cerchio circoscritto
+    /*
 bool DelaunayTriangulation::isInsideCircumcircle(const Point& point, const Triangle& triangle) const {
     // Calcola il determinante della matrice per verificare se il punto è dentro la circonferenza circoscritta
     double ax = triangle.a.x - point.x;
@@ -164,22 +266,6 @@ bool isPointInsideTriangle(const Point& Q, const Triangle& T) {
 }
 
 
-bool SortVertices(const Point& p1,
-               const Point& p2,
-               const Point& p3)
-{
-  double dx1 = p2.x - p1.x;
-  double dy1 = p2.y - p1.y;
-  double dx2 = p3.x - p1.x;
-  double dy2 = p3.y - p1.y;
-
-  if (dx1 * dy2 > dy1 * dx2)
-    return true;
-  else if (dx1 * dy2 < dy1 * dx2)
-    return false;
-  else
-    return (dx1 * dx2 + dy1 * dy2 >= 0);
-}
 
 
 bool isPointInPolygon(const Point& Q, const vector<Triangle>& triangulation) {
@@ -210,18 +296,13 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
     double BCx = C.x - B.x;
     double BCy = C.y - B.y;
 
-    double dotProduct = ABx * BCx + ABy * BCy;
     double crossProduct = ABx * BCy - ABy * BCx;
+    double dotProduct = ABx * BCx + ABy * BCy;
 
-    return atan2(crossProduct, dotProduct);
+    return std::atan2(crossProduct, dotProduct);
+}
 
-
-    double angleRadians = std::atan2(ABx * BCy - ABy * BCx, ABx * BCx + ABy * BCy);
-    double angleDegrees = angleRadians * 180.0 / M_PI; //converte radianti in gradi
-
-    return angleDegrees;
-    }
-
+/*
     bool verifyDelaunayHypothesis(const Point& pointA, const Point& pointB, const Point& pointC, const Point& pointD) {
         // Calcola gli angoli opposti al lato di adiacenza BC
         double angleABC = calculateAngle(pointA, pointB, pointC);
@@ -327,7 +408,7 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
 
     Triangulation::Triangulation(const std::vector<Triangle>& initialTriangles)
             : triangles(initialTriangles) {}
-/*
+
  * // Tipo per l'identificatore dei triangoli
 using TriangleId = size_t;
 
