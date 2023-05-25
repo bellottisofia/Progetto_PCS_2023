@@ -20,6 +20,24 @@ Point& Point::operator=(const Point& other) {
   }
   return *this;
 }
+double Point::calculateAngle( const Point& B, const Point& C) {
+        double ABx = B.x - x;
+        double ABy = B.y - y;
+        double BCx = C.x - B.x;
+        double BCy = C.y - B.y;
+
+        // Calculate the dot product of vectors AB and BC
+        double dotProduct = ABx * BCx + ABy * BCy;
+        // Calculate the magnitudes of vectors AB and BC
+        double magnitudeAB = std::sqrt(ABx * ABx + ABy * ABy);
+        double magnitudeBC = std::sqrt(BCx * BCx + BCy * BCy);
+
+        // Calculate the angle in radians using the dot product and magnitudes
+        double cosAngle = dotProduct / (magnitudeAB * magnitudeBC);
+        double angleRadians = std::acos(cosAngle);
+        return M_PI - angleRadians;
+    }
+
 /*
 double cross(const Point& a, const Point& b) {
     return a.x * b.y - a.y * b.x;
@@ -64,6 +82,41 @@ void Triangle::SortVertices(){
     }
 }
 
+bool Triangle::isInsideCircumcircle(const Point& point)  {
+       // Calcola il determinante della matrice per verificare se il punto è dentro la circonferenza circoscritta
+           double a = p1.x - point.x;
+           double b = p1.y - point.y;
+           double c = a*a + b*b;
+           double d = p2.x - point.x;
+           double e = p2.y - point.y;
+           double f = d*d + e*e;
+           double g = p3.x - point.x;
+           double h = p3.y - point.y;
+           double i = g*g + h*h;
+
+           double det = a * (e * i - h * f) - b * (d * i - f * g) + c * (d * h - g * e);
+
+           return det > 0.0;
+   }
+
+
+bool Triangle::isPointInsideTriangle(const Point& Q) {
+    // Calcola le aree dei triangoli formati dal punto Q e ciascun lato del triangolo ABC
+    Triangle t1(p1, p2, p3);
+    Triangle t2(Q, p2, p3);
+    Triangle t3(p1, Q, p3);
+    Triangle t4(p1, p2, Q);
+
+    double areaABC = t1.calculateArea();
+    double areaPBC = t2.calculateArea();
+    double areaPCA = t3.calculateArea();
+    double areaPAB = t4.calculateArea();
+
+    // Verifica se la somma delle aree dei triangoli interni è uguale all'area totale del triangolo ABC
+    return abs(areaABC - (areaPBC + areaPCA + areaPAB)) < 1e-12;
+}
+
+
 bool Triangle::isVertexShared(const Point& vertex)  {
     return (vertex == p1) || (vertex == p2) || (vertex == p3);
 }
@@ -87,43 +140,6 @@ bool Triangle::isAdjacent(const Triangle& other) {
 
 }
 
-
-
-
-
-
-void Triangle::addAdjacentTriangle(const Triangle* triangle) {
-    adjacentTriangles.push_back(triangle);
-    triangle->adjacentTriangles.push_back(this);
-}
-
-
-void Triangle::addAdjacentTriangles(std::vector<Triangle>& triangles) {
-    const int numTriangles = triangles.size();
-    for (int i = 0; i < numTriangles; ++i) {
-
-            if (isAdjacent(triangles[i])) {
-                neighbors.push_back(&triangles[i]);
-
-
-                // Stampa le informazioni aggiunte
-                std::cout << "Aggiunto triangolo adiacente: " << triangles[i] << std::endl;
-            }
-        }
-    }
-
-
-
-std::vector<Triangle*>& Triangle::getAdjacentTriangles() {
-        return neighbors;
-}
-
-void Triangle::printAdjacentTriangles()  {
-    std::cout << "Triangoli adiacenti (" << neighbors.size() << "):" << std::endl;
-    for (const Triangle* neighbor : neighbors) {
-        std::cout << *neighbor << std::endl;
-    }
-}
 
 
 
@@ -177,162 +193,82 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
     }
 
 
-    double Triangle::calculateAngle(const Point& A, const Point& B, const Point& C) {
-        double ABx = B.x - A.x;
-            double ABy = B.y - A.y;
-            double BCx = C.x - B.x;
-            double BCy = C.y - B.y;
 
-            double angleRadians = std::atan2(ABx * BCy - ABy * BCx, ABx * BCx + ABy * BCy);
-            if (angleRadians < 0) {
-                angleRadians += 2 * M_PI;  // Assicura che l'angolo sia compreso tra 0 e 2*pi
-            }
-            double angleDegrees = angleRadians * 180.0 / M_PI;
 
-            return angleDegrees;
-        }
 
-/*
-//opzione se ho punti ordinati
-double findMaximumTriangleAreaOrdinatesPoints(const std::vector<Point>& points) {
-    int n = points.size();
-    double maxArea = 0.0;
+    Triangulation::Triangulation(const std::vector<Triangle>& DelunayTriangles);
+    DelunayTriangles(DelunayTriangles){};
 
-    for (int i = 0; i < n - 2; i++) {
-        int j = i + 1;
-        int k = j + 1;
+    void Triangulation::addPointToTriangulation(const Point& Q);
 
-        while (k < n) {
-            double area = calculateTriangleArea(points[i], points[j], points[k]);
-            maxArea = std::max(maxArea, area);
-            k++;
-        }
+    const Triangulation::std::vector<Triangle>& getTriangles() const {
+        return DelunayTriangles;
     }
 
-    return maxArea;
-}
-*/
+    const Triangulation::std::vector<const Triangle*>& getAdjacentTriangles(const Triangle& DelunayTriangles) const {
+        return adjacencyList.at(&DelunayTriangles);
+    }
 
+    void Triangulation::updateAdjacency(const Triangle& DelunayTriangles) {
+        std::vector<const Triangle*> adjacentTriangles;
 
-
-/*
- * Per verificare se un punto Q è esterno al cerchio circoscritto di un triangolo T,
-
-
-Calcoliamo il centro del cerchio circoscritto (xc, yc) utilizzando le coordinate dei vertici del triangolo T.
-Calcoliamo il raggio del cerchio circoscritto (r) utilizzando le coordinate dei vertici del triangolo T.
-Calcoliamo la distanza tra il centro del cerchio e il punto Q utilizzando la formula della distanza euclidea.
-Se la distanza tra il centro del cerchio e il punto Q è maggiore del raggio r, allora il punto Q è esterno al cerchio circoscritto.
-
-
-bool isPointInsideSquare(const Point& Q, const Triangle& T) {
-    double minX = std::min({ T.a.x, T.b.x, T.c.x });
-    double maxX = std::max({ T.a.x, T.b.x, T.c.x });
-    double minY = std::min({ T.a.y, T.b.y, T.c.y });
-    double maxY = std::max({ T.a.y, T.b.y, T.c.y });
-
-    return (Q.x >= minX && Q.x <= maxX && Q.y >= minY && Q.y <= maxY);
-}
-
-*/
-//usa il determinante per controllare se Q è dentro il cerchio circoscritto
-    /*
-bool DelaunayTriangulation::isInsideCircumcircle(const Point& point, const Triangle& triangle) const {
-    // Calcola il determinante della matrice per verificare se il punto è dentro la circonferenza circoscritta
-    double ax = triangle.a.x - point.x;
-    double ay = triangle.a.y - point.y;
-    double bx = triangle.b.x - point.x;
-    double by = triangle.b.y - point.y;
-    double cx = triangle.c.x - point.x;
-    double cy = triangle.c.y - point.y;
-
-    double det = ax * (by * cx - bx * cy) - ay * (bx * cx - by * cy) + (ax * by - ay * bx) * cx;
-
-    return det > 0.0;
-}
-bool isPointInsideTriangle(const Point& Q, const Triangle& T) {
-    double angleSum = 0.0;
-
-    // Calcola gli angoli tra il punto Q e ciascun vertice del triangolo ABC
-    double angleA = calculateAngle(Q, T.A, T.B);
-    double angleB = calculateAngle(Q, T.B, T.C);
-    double angleC = calculateAngle(Q, T.C, T.A);
-
-    // Calcola la somma degli angoli
-    angleSum = angleA + angleB + angleC;
-
-    // Verifica se la somma degli angoli è uguale a 360 gradi
-    return (std::abs(angleSum - 360.0) < Point::geometricTol);
-}
-
-
-
-
-bool isPointInPolygon(const Point& Q, const vector<Triangle>& triangulation) {
-    int count = 0;
-
-    for (const Triangle& T : triangulation) {
-        if (Q == T.p1 || Q == T.p2 || Q == T.p3) {
-            return true;  // Il punto Q è un vertice della triangolazione (di bordo)
-        }
-
-        if ((Q.y > T.p1.y && Q.y <= T.p2.y) || (Q.y > T.p2.y && Q.y <= T.p1.y)) {
-            double xIntersection = (Q.y - T.p1.y) * (T.p2.x - T.p1.x) / (T.p2.y - T.p1.y) + T.p1.x;
-            if (Q.x < xIntersection) {
-                count++;
+        for (const Triangle& other : DelunayTriangles) {
+            if (DelunayTriangles.isAdjacent(other)) {
+                adjacentTriangles.push_back(&other);
+                adjacencyList[&other].push_back(&DelunayTriangles);
             }
         }
+
+        adjacencyList[&DelunayTriangles] = adjacentTriangles;
     }
 
-    return (count % 2 == 1);  // true se il punto Q è interno, false se è di bordo
-}
 
 
 
 
-double calculateAngle(const Point& A, const Point& B, const Point& C) {
-    double ABx = B.x - A.x;
-    double ABy = B.y - A.y;
-    double BCx = C.x - B.x;
-    double BCy = C.y - B.y;
 
-    double crossProduct = ABx * BCy - ABy * BCx;
-    double dotProduct = ABx * BCx + ABy * BCy;
+    int Point::calculateOrientation(const Point& p1, const Point& p2) {
+        double value = (p2.y - p1.y) * (x - p2.x) - (p2.x - p1.x) * (y - p2.y);
 
-    return std::atan2(crossProduct, dotProduct);
-}
-
-/*
-    bool verifyDelaunayHypothesis(const Point& pointA, const Point& pointB, const Point& pointC, const Point& pointD) {
-        // Calcola gli angoli opposti al lato di adiacenza BC
-        double angleABC = calculateAngle(pointA, pointB, pointC);
-        double angleBDC = calculateAngle(pointB, pointD, pointC);
-
-        // Verifica se la somma degli angoli è minore di °
-        double sumAngles = angleABC + angleBDC;
-        const double maxSumAngles = 180.0 - 0.0001;  // ° - tolleranza
-        return sumAngles < maxSumAngles;
+        if (value == 0) {
+            return 0;  // I punti sono allineati
+        } else if (value > 0) {
+            return 1;  // Orientamento orario
+        } else {
+            return -1; // Orientamento antiorario
+        }
     }
 
-    bool doSegmentsIntersect(const Point& p1, const Point& q1, const Point& p2, const Point& q2) {
-        // Calcola le direzioni dei segmenti
-        double d1 = direction(p2, q2, p1);
-        double d2 = direction(p2, q2, q1);
-        double d3 = direction(p1, q1, p2);
-        double d4 = direction(p1, q1, q2);
+
+    // Verifica se il punto q si trova sul segmento p-r
+    bool Point::isPointOnSegment( const Point& q, const Point& r) {
+        return x >= min(p.x, r.x) && q.x <= max(x, r.x) &&
+               y >= min(p.y, r.y) && q.y <= max(y, r.y);
+    }
+
+    bool Triangle::doSegmentsIntersect( const Point& Q) {
+        // Calcola l'orientamento dei punti rispetto ai segmenti
+        int orientation1 = -1;
+        int orientation2 = calculateOrientation(p1, p2, Q);
+        int orientation3 = calculateOrientation(p3, Q, p1);
+        int orientation4 = calculateOrientation(p3, Q, p2);
 
         // Controlla se i segmenti si intersecano
-        if ((d1 > 0.0 && d2 < 0.0 || d1 < 0.0 && d2 > 0.0) && (d3 > 0.0 && d4 < 0.0 || d3 < 0.0 && d4 > 0.0))
+        if (orientation1 != orientation2 && orientation3 != orientation4) {
+            return true;
+        }
 
-         {
+        // Controlla i casi speciali in cui i segmenti sono sovrapposti
+        if (orientation1 == 0 && isPointOnSegment(p1, p2, p3)) {
             return true;
-        } else if (d1 == 0 && isPointOnSegment(p2, q2, p1)) {
+        }
+        if (orientation2 == 0 && isPointOnSegment(p1, p2, p4)) {
             return true;
-        } else if (d2 == 0 && isPointOnSegment(p2, q2, q1)) {
+        }
+        if (orientation3 == 0 && isPointOnSegment(p3, p4, p1)) {
             return true;
-        } else if (d3 == 0 && isPointOnSegment(p1, q1, p2)) {
-            return true;
-        } else if (d4 == 0 && isPointOnSegment(p1, q1, q2)) {
+        }
+        if (orientation4 == 0 && isPointOnSegment(p3, p4, p2)) {
             return true;
         }
 
@@ -340,23 +276,13 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
     }
 
 
-    // Calcola la direzione del punto r rispetto alla linea formata da p e q
-    double direction(const Point& p, const Point& q, const Point& r) {
-        return (r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x);
-    }
 
-    // Verifica se il punto q si trova sul segmento p-r
-    bool isPointOnSegment(const Point& p, const Point& q, const Point& r) {
-        return q.x >= min(p.x, r.x) && q.x <= max(p.x, r.x) &&
-               q.y >= min(p.y, r.y) && q.y <= max(p.y, r.y);
-    }
-
-    void addPointToTriangulation(const Point& Q, std::vector<Triangle>& triangulation) {
+    void Triangulation::addPointToTriangulation(const Point& Q) {
         Triangle containingTriangle;
 
         // Verifica se il punto Q è interno alla triangolazione
         bool isInside = false;
-        for (const Triangle& triangle : triangulation) {
+        for (const Triangle& triangle : DelunayTriangles) {
             if (isPointInsideTriangle(Q, triangle)) {
                 isInside = true;
                 containingTriangle = triangle;
@@ -371,65 +297,40 @@ double calculateAngle(const Point& A, const Point& B, const Point& C) {
             Triangle newTriangle3(Q, containingTriangle.C, containingTriangle.A);
 
             // Aggiungi i nuovi triangoli alla triangolazione
-            triangulation.push_back(newTriangle1);
-            triangulation.push_back(newTriangle2);
-            triangulation.push_back(newTriangle3);
+            DelunayTriangles.push_back(newTriangle1);
+            DelunayTriangles.push_back(newTriangle2);
+            DelunayTriangles.push_back(newTriangle3);
 
             // Rimuovi il triangolo T dalla triangolazione
-            triangulation.erase(std::remove(triangulation.begin(), triangulation.end(), containingTriangle), triangulation.end());
+            DelunayTriangles.erase(std::remove(DelunayTriangles.begin(), DelunayTriangles.end(), containingTriangle), DelunayTriangles.end());
         } else {
             // Il punto Q è esterno alla triangolazione, unisce Q con tutti i vertici escludendo le intersezioni
-            for (size_t i = 0; i < triangulation.size(); ++i) {
-                Triangle& triangle = triangulation[i];
+            for (size_t i = 0; i < DelunayTriangles.size(); ++i) {
+                Triangle& triangle = DelunayTriangles[i];
                 Triangle QTriangle(Q, triangle.A, triangle.B);
                 if (!doSegmentsIntersect(triangle.A, triangle.B, triangle.C, Q)) {
                     // Aggiungi il nuovo triangolo QTriangle solo se non ha intersezioni con il segmento AB
-                    triangulation.push_back(QTriangle);
+                    DelunayTriangles.push_back(QTriangle);
                 }
 
                 QTriangle = Triangle(Q, triangle.B, triangle.C);
                 if (!doSegmentsIntersect(triangle.A, triangle.B, triangle.C, Q)) {
                     // Aggiungi il nuovo triangolo QTriangle solo se non ha intersezioni con il segmento BC
-                    triangulation.push_back(QTriangle);
+                    DelunayTriangles.push_back(QTriangle);
                 }
 
                 QTriangle = Triangle(Q, triangle.C, triangle.A);
                 if (!doSegmentsIntersect(triangle.A, triangle.B, triangle.C, Q)) {
                     // Aggiungi il nuovo triangolo QTriangle solo se non ha intersezioni con il segmento CA
-                    triangulation.push_back(QTriangle);
+                    DelunayTriangles.push_back(QTriangle);
                 }
 
                 // Rimuovi il triangolo corrente dalla triangolazione
-                triangulation.erase(triangulation.begin() + i);
+                DelunayTriangles.erase(DelunayTriangles.begin() + i);
                 --i;
             }
         }
     }
 
-    Triangulation::Triangulation(const std::vector<Triangle>& initialTriangles)
-            : triangles(initialTriangles) {}
 
- * // Tipo per l'identificatore dei triangoli
-using TriangleId = size_t;
 
-// Struttura per l'adiacenza dei triangoli
-struct TriangleAdjacency {
-    std::vector<TriangleId> adjacentTriangles;
-};
-
-// Funzione per creare una nuova entrata di adiacenza per un triangolo
-TriangleAdjacency createTriangleAdjacency() {
-    TriangleAdjacency adjacency;
-    adjacency.adjacentTriangles.clear();
-    return adjacency;
-}
-
-// Funzione per aggiungere l'adiacenza tra due triangoli
-void addTriangleAdjacency(std::vector<TriangleAdjacency>& adjacencyList, TriangleId triangleId1, TriangleId triangleId2) {
-    // Aggiungi l'adiacenza tra triangleId1 e triangleId2
-    adjacencyList[triangleId1].adjacentTriangles.push_back(triangleId2);
-    adjacencyList[triangleId2].adjacentTriangles.push_back(triangleId1);
-}
- */
-
-}
