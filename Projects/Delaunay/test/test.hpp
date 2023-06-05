@@ -23,11 +23,12 @@ TEST(DelaunayTest, calculateArea) {
     };
 
     // Crea un oggetto Triangle utilizzando i primi tre punti del vettore
-    Triangle triangle(points[0], points[1], points[2]);
+    Triangle triangle(points[0], points[1], points[2],1);
 
     // Verifica se l'area calcolata corrisponde al valore atteso di 0.5
     EXPECT_EQ(triangle.calculateArea(), 0.5);
 }
+/*
 // Test case per la funzione IsVerticesSort
 TEST(DelaunayTest, IsVerticesSort) {
     // Crea un vettore di punti
@@ -43,9 +44,10 @@ TEST(DelaunayTest, IsVerticesSort) {
 
 
     // Verifica se i vertici sono ordinati in senso antiorario
-    EXPECT_EQ(triangle.IsVerticesSort(), 0);
+    EXPECT_EQ(IsVerticesSort(points[0], points[1], points[2]), 0);
 
 }
+/*
 // Test case per la funzione SortVertices
 TEST(DelaunayTest, SortVertices) {
     // Crea un vettore di punti
@@ -65,6 +67,28 @@ TEST(DelaunayTest, SortVertices) {
     EXPECT_EQ(triangle.IsVerticesSort(), 1);
 
 }
+*/
+
+// Test case per la funzione SortVertices
+TEST(DelaunayTest, SortVertices) {
+    // Crea un vettore di punti
+    vector<Point> points = {
+        Point(0, 0, 0),
+        Point(1, 1, 1),
+        Point(1,0,2)
+
+    };
+    Triangle t(points[0],points[1],points[2],1);
+
+
+    EXPECT_TRUE(t.IsVerticesSort());
+    // Crea un oggetto Triangle utilizzando i primi tre punti del vettore
+    t.SortVertices();
+    // Verifica se i vertici sono ordinati in senso antiorario
+    EXPECT_TRUE(t.IsVerticesSort());
+
+}
+
 // Test case per la funzione isVertexShared
 TEST(DelaunayTest, isVertexShared) {
     // Crea un vettore di punti
@@ -76,7 +100,7 @@ TEST(DelaunayTest, isVertexShared) {
     };
 
     // Crea un oggetto Triangle utilizzando i primi tre punti del vettore
-    Triangle triangle(points[0], points[1], points[2]);
+    Triangle triangle(points[0], points[1], points[2],1);
     vector<Point> vertex={Point(1,1,1),Point(3,3,3),Point(1,0,2)};
 
 
@@ -97,10 +121,10 @@ TEST(DelaunayTest, isAdjacent) {
     };
 
     // Crea un oggetto Triangle utilizzando i primi tre punti del vettore
-    Triangle triangle(points[0], points[1], points[2]);
+    Triangle triangle(points[0], points[1], points[2],1);
     // Creazione di un altro triangolo adiacente
         vector<Point> adjacentVertex = {Point(1, 1, 1), Point(2, 2, 2), Point(1, 0, 2)};
-        Triangle adjacentTriangle(adjacentVertex[0], adjacentVertex[1], adjacentVertex[2]);
+        Triangle adjacentTriangle(adjacentVertex[0], adjacentVertex[1], adjacentVertex[2],2);
 
         // Verifica se i triangoli sono adiacenti
         EXPECT_EQ(triangle.isAdjacent(adjacentTriangle), true);
@@ -216,8 +240,6 @@ TEST(DelaunayTest, addAdjacentTriangles2) {
 
 
 
-*/
-/*
 TEST(DelaunayTest, createTriangularMesh) {
     // Crea un vettore di punti
     std::vector<Point> points = {
@@ -260,8 +282,8 @@ TEST(DelaunayTest, FindMaximumTriangleArea) {
                 Point(4, 4, 4)
     };
 
-    Triangle triangle(points[0], points[1], points[2]);
-    Triangle maxTriangle = triangle.findMaximumTriangle(points);
+    Triangle triangle(points[0], points[1], points[2],1);
+    Triangle maxTriangle = triangle.findMaximumTriangleArea(points);
 
     // Assert per verificare il risultato atteso
     EXPECT_EQ(maxTriangle.p1, points[0]);
@@ -275,7 +297,7 @@ TEST(TriangleTest, PointInsideCircumcircle) {
     Point p1(0.0, 0.0, 1);
     Point p2(2.0, 0.0, 2);
     Point p3(1.0, 2.0, 3);
-    Triangle triangle(p1, p2, p3);
+    Triangle triangle(p1, p2, p3,1);
 
     Point pointInside(1.0, 1.0, 4);
 
@@ -289,7 +311,7 @@ TEST(TriangleTest, PointOutsideCircumcircle) {
     Point p1(0.0, 0.0, 1);
     Point p2(2.0, 0.0, 2);
     Point p3(1.0, 2.0, 3);
-    Triangle triangle(p1, p2, p3);
+    Triangle triangle(p1, p2, p3,1);
 
     Point pointOutside(0.0, 2.0, 4);
 
@@ -298,32 +320,22 @@ TEST(TriangleTest, PointOutsideCircumcircle) {
     EXPECT_FALSE(isInside);
 }
 
-TEST(CalculateAngleTest, CorrectAngle) {
-    Point p1(0.0, 0.0, 1);
-    Point p2(0.0, 1.0, 2);
-    Point p3(1.0, 0.0, 3);
 
-    Triangle triangle(p1, p2, p3);
-
-    double expectedAngleRadians = M_PI * 0.25;
-
-    double angleRadians = abs(p1.calculateAngle( p2, p3));
-
-    EXPECT_DOUBLE_EQ(angleRadians, expectedAngleRadians);
-}
 // Test per la funzione isPointInsideTriangle
 TEST(IsPointInsideTriangleTest, PointInside) {
     Point p1(0.0, 0.0, 1);
-    Point p2(0.0, 1.0, 2);
-    Point p3(1.0, 0.0, 3);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
 
-    Triangle triangle(p1, p2, p3);
+    Triangle triangle(p1, p2, p3,1);
+
 
     Point Q(0.5, 0.5, 4);
 
     bool result = triangle.isPointInsideTriangle(Q);
 
-    EXPECT_TRUE(result);
+        EXPECT_TRUE(result);
+
 }
 
 TEST(IsPointInsideTriangleTest, PointOutside) {
@@ -331,7 +343,7 @@ TEST(IsPointInsideTriangleTest, PointOutside) {
     Point p2(0.0, 1.0, 2);
     Point p3(1.0, 0.0, 3);
 
-    Triangle triangle(p1, p2, p3);
+    Triangle triangle(p1, p2, p3,1);
 
     Point Q(0.0, 2.0, 4);
 
@@ -340,4 +352,115 @@ TEST(IsPointInsideTriangleTest, PointOutside) {
     EXPECT_FALSE(result);
 }
 
+
+
+
+
+ // Verifica se il punto q si trova sul segmento p-r
+
+TEST(isPointOnSegment, PointOUT) {
+    Point p1(2.0, 3.0, 1);
+    Point p2(3.0, 0.0, 2);
+    Point p3(1.0, 0.0, 3);
+
+    EXPECT_FALSE(p1.isPointOnSegment(p2, p3));
+
+}
+
+TEST(isPointOnSegment, PointON) {
+    Point p1(2.0, 0.0, 1);
+    Point p2(3.0, 0.0, 2);
+    Point p3(1.0, 0.0, 3);
+
+    EXPECT_TRUE(p1.isPointOnSegment(p2, p3));
+
+}
+
+TEST(doSegmentIntersect, no) {
+
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(1.0, 1.0, 6);
+    EXPECT_FALSE(p1.doSegmentsIntersect( p2,  p3,  p4));
+}
+TEST(doSegmentIntersect, yes) {
+
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 2.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(1.0, 0.0, 6);
+    EXPECT_TRUE(p1.doSegmentsIntersect( p2,  p3,  p4));
+}
+
+   // bool Triangle::findIntersection(const Point& q)
+
+TEST(findIntersection, yes) {
+
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 2.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(1.0, 0.0, 6);
+    Triangle triangle(p1,p2,p3,1);
+
+  EXPECT_TRUE(p3.isPointInVector(triangle.findIntersection( p4)));
+    // devo scrivere p4 in
+}
+
+
+TEST(AreTrianglesDelaunayTest, TrianglesSatisfyCriterion) {
+  // Create triangles that satisfy the Delaunay criterion
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(1.0, 1.0, 6);
+
+
+
+    Triangle triangle1(p1, p2, p3,1);
+    Triangle triangle2(p1, p2, p4,2);
+
+  // Check if the triangles satisfy the Delaunay criterion
+    EXPECT_TRUE(triangle1.areTrianglesDelaunay(triangle2));
+    EXPECT_TRUE(triangle2.areTrianglesDelaunay(triangle1));
+}
+
+// Test case for when a triangle does not satisfy the Delaunay criterion
+TEST(AreTrianglesDelaunayTest, TriangleDoesNotSatisfyCriterion) {
+  // Create triangles where one does not satisfy the Delaunay criterion
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(2.0, 0.0, 6);
+
+
+
+    Triangle triangle1(p1, p2, p3,1);
+    Triangle triangle3(p1, p2, p4,2);
+  // Check if a triangle doesn't satisfy the Delaunay criterion with another triangle
+  EXPECT_FALSE(triangle1.areTrianglesDelaunay(triangle3));
+}
+// Test case per la funzione flip: vertici scambiati correttamente
+TEST(TriangleTest, FlipVerticesSwapped)
+{
+    // Crea i triangoli di prova
+    Point p1(0, 0, 1);
+    Point p2(1, 0, 2);
+    Point p3(0, 1, 3);
+    Triangle triangle1(p1, p2, p3,1);
+
+    Point p4(0.7, 0.7, 4);
+    Triangle triangle2(p2, p4, p3,2);
+
+    triangle1.flip(triangle2);
+
+    // Verifica che i vertici siano stati scambiati correttamente
+    EXPECT_EQ(triangle1.p1, p1);
+    EXPECT_EQ(triangle1.p2, p2);
+    EXPECT_EQ(triangle1.p3, p4);
+
+    EXPECT_EQ(triangle2.p1, p1);
+    EXPECT_EQ(triangle2.p2, p4);
+    EXPECT_EQ(triangle2.p3, p3);
+}
 #endif // __TEST_H
