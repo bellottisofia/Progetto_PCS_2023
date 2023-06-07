@@ -283,7 +283,7 @@ TEST(DelaunayTest, FindMaximumTriangleArea) {
     };
 
     Triangle triangle(points[0], points[1], points[2],1);
-    Triangle maxTriangle = triangle.findMaximumTriangleArea(points);
+    Triangle maxTriangle = triangle.findMaximumTriangle(points);
 
     // Assert per verificare il risultato atteso
     EXPECT_EQ(maxTriangle.p1, points[0]);

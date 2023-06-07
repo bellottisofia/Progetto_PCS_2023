@@ -137,48 +137,19 @@ inline Point operator+(const Point& p1, const Point& p2)
        void SortVertices();
 
   // Function to find the triangle with the maximum area usando l'approccio divide et impera
-  //Triangle findMaximumTriangleArea(const std::vector<Point>& points, int start, int end);
-  //Triangle findMaximumTriangle(const std::vector<Point>& points);
-  Triangle findMaximumTriangleArea(const std::vector<Point>& points);
+  Triangle findMaximumTriangleArea(const std::vector<Point>& points, int start, int end);
+  Triangle findMaximumTriangle(const std::vector<Point>& points);
   bool areTrianglesDelaunay(Triangle& triangle1);
   std::vector<Point> findIntersection(const Point& q);
   void flip(Triangle& triangle1);
 };
 
-/*
-class Triangulation {
-public:
 
-    std::vector<Triangle> DelunayTriangles;
-    std::unordered_map<int, std::vector<int>> adjacencyList;
-    Triangulation(const std::vector<Triangle>& DelunayTriangles);
-
-
-
-       void addTriangle(const Triangle& triangle) {
-           triangles.push_back(triangle);
-           adjacencyList[triangle.id] = {}; // Inizializza la lista di adiacenza per il triangolo
-       }
-
-       void addAdjacentTriangle(int triangleId, int adjacentTriangleId) {
-           adjacencyList[triangleId].push_back(adjacentTriangleId);
-           adjacencyList[adjacentTriangleId].push_back(triangleId);
-       }
-
-       const std::vector<int>& getAdjacentTriangles(int triangleId) {
-           return adjacencyList[triangleId];
-       }
-        void addPointToTriangulation(const Point&){}
-
-
-
-        void updateAdjacency(const Triangle& DelunayTriangles){}
-*/
         class Triangulation {
         public:
             std::vector<Triangle> DelunayTriangles;
             std::unordered_map<unsigned int, std::vector<unsigned int>> adjacencyList;
-
+            Triangulation() = default;
             Triangulation(const std::vector<Triangle>& DelunayTriangles);
 
             void addTriangle(const Triangle& triangle);
@@ -191,19 +162,13 @@ public:
             void createSubtriangulation(const Point& Q, int triangleId);
             void connectPointToVertices(const Point& Q);
             void addPointToTriangulation(const Point&);
+            Triangle findTriangleById(const unsigned int triangleId);
 
-            void updateAdjacency(const std::vector<Triangle>& DelunayTriangles);/* {
-                this->DelunayTriangles = DelunayTriangles;
-                buildAdjacencyList();
-            }
-*/
-        private:
-            void buildAdjacencyList();
 
 
 };
 
-
+Triangulation DelunayTriangulation(const std::vector<Point>& points);
 
 }
 

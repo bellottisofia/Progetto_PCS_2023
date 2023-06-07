@@ -23,11 +23,13 @@ std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
 
 
 bool ImportData(const string& inputFilePath, vector<Point>& points);
+bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulation& triangulation);
 
 int main()
 {
-    string inputFileName = "C:/Users/giorg/OneDrive/Desktop/Progetto_PCS_2023/Projects/Delaunay/Dataset/Test1.csv"; // Inserisci il percorso del tuo file
+    string inputFileName = "C:/Users/sofia/OneDrive - Politecnico di Torino/Desktop/delaunay/Projects/Delaunay/Dataset/Test1.csv"; // Inserisci il percorso del tuo file
     vector<Point> points;
+
 
     if (!ImportData(inputFileName, points))
     {
@@ -35,16 +37,29 @@ int main()
       return -1;
     }
 
-    Triangle triangle;
-    Triangle triangle_max;
-    triangle_max = triangle.findMaximumTriangle(points);
+    /*
 
     for (const auto& point : points) {
             std::cout << point << std::endl;
         }
     cout << triangle_max;
+*/
+    Triangulation Delunaytriangulation;
+    Delunaytriangulation=DelunayTriangulation( points);
+    string outputFileName = "./Delaunay.txt";
+        if (!ExportResult(outputFileName, Delunaytriangulation))
+        {
+            cerr << "Something went wrong with export" << endl;
+            return -1;
+        }
+        else
+        {
+            cout << "Export successful" << endl;
+        }
 
+        return 0;
     return 0;
+
 }
 
 
@@ -76,6 +91,31 @@ bool ImportData(const string& inputFilePath, vector<Point>& points)
             file.close();
             return false;
         }
+    }
+
+    file.close();
+    return true;
+}
+bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulation& triangulation)
+
+{
+    ofstream file(outputFilePath);
+    if (!file)
+    {
+        cerr << "File open failed" << endl;
+        return false;
+    }
+
+    for (unsigned int i = 0; i < triangulation.DelunayTriangles.size(); i++)
+    {
+        // Get the current Triangle object
+        Triangle& triangle = triangulation.DelunayTriangles[i];
+
+        // Write the Triangle object's data to the file
+        file << "Triangle " << triangle.id << ":" ;
+        file << "Vertex 1: (" << triangle.p1.x << ", " << triangle.p1.y << "); " ;
+        file << "Vertex 2: (" << triangle.p2.x << ", " << triangle.p2.y << ");" ;
+        file << "Vertex 3: (" << triangle.p3.x << ", " << triangle.p3.y << ") "  << endl;
     }
 
     file.close();
