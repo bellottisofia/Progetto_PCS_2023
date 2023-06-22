@@ -440,6 +440,22 @@ TEST(AreTrianglesDelaunayTest, TriangleDoesNotSatisfyCriterion) {
   // Check if a triangle doesn't satisfy the Delaunay criterion with another triangle
   EXPECT_FALSE(triangle1.areTrianglesDelaunay(triangle3));
 }
+TEST(AreTrianglesDelaunayTest, Triangles_not_adjacent) {
+  // Create triangles where one does not satisfy the Delaunay criterion
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point p4(15.0,7.0, 6);
+    Point p5(9.0, 7.0, 5);
+    Point p6(20.0, 14.0, 5);
+
+
+
+    Triangle triangle1(p1, p2, p3,1);
+    Triangle triangle3(p3, p4, p5,2);
+  // Check if a triangle doesn't satisfy the Delaunay criterion with another triangle
+  EXPECT_EQ(triangle1.areTrianglesDelaunay(triangle3),-1);
+}
 // Test case per la funzione flip: vertici scambiati correttamente
 TEST(TriangleTest, FlipVerticesSwapped)
 {
@@ -462,5 +478,34 @@ TEST(TriangleTest, FlipVerticesSwapped)
     EXPECT_EQ(triangle2.p1, p1);
     EXPECT_EQ(triangle2.p2, p4);
     EXPECT_EQ(triangle2.p3, p3);
+}
+//punto esterno
+TEST(connettiPuntoEsterno, interseca) {
+  // Create triangles where one does not satisfy the Delaunay criterion
+    Point p1(0.0, 0.0, 1);
+    Point p2(1.0, 0.0, 2);
+    Point p3(0.0, 1.0, 3);
+    Point Q(1.0, 1.0, 6);
+
+
+
+    Triangle triangle1(p1, p2, p3,1);
+    std::vector<Triangle> triangles;
+    triangles.push_back(triangle1);
+    Triangulation Delunay;
+    Delunay.DelunayTriangles=triangles;
+
+
+    Delunay.addPointToTriangulation(Q);
+
+    Triangle triangle(p2, Q, p3,2);
+    EXPECT_TRUE(triangle.isAdjacent(triangle1));
+
+
+std::vector<Triangle> ciao;
+ciao.push_back(triangle1);
+ciao.push_back(triangle);
+Delunay.print();
+  EXPECT_EQ(Delunay,ciao);
 }
 #endif // __TEST_H

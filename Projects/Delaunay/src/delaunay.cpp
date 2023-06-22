@@ -246,9 +246,10 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
     }
 
 
-    Triangulation::Triangulation(const std::vector<Triangle>& DelunayTriangles) : DelunayTriangles(DelunayTriangles) {
+    Triangulation::Triangulation(const std::vector<Triangle>& triangles)
+    : DelunayTriangles(triangles) {}
 
-    }
+
 
     void Triangulation::addTriangle(const Triangle& triangle) {
 
@@ -272,7 +273,7 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
 
 
 
-    bool Point::isPointOnSegment(const Point& p,  const Point& r) {
+    bool Point::isPointOnSegment(const Point& p,  const Point& r) const{
         // Verifica se il punto q si trova sul segmento p-r
         return x >= std::min(p.x, r.x) && x <= std::max(p.x, r.x) &&
                y >= std::min(p.y, r.y) && y <= std::max(p.y, r.y);
@@ -327,8 +328,9 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
 
 
 
-bool Triangle::areTrianglesDelaunay(Triangle& triangle1) {
-    if (isAdjacent(triangle1)){
+    int Triangle::areTrianglesDelaunay(Triangle& triangle1) {
+
+        if (isAdjacent(triangle1)) {
             // Verifica se i punti del primo triangolo sono all'interno della circonferenza circoscritta del secondo triangolo
             bool point1InsideCircle = isInsideCircumcircle(triangle1.p1);
             bool point2InsideCircle = isInsideCircumcircle(triangle1.p2);
@@ -340,11 +342,14 @@ bool Triangle::areTrianglesDelaunay(Triangle& triangle1) {
             bool point6InsideCircle = triangle1.isInsideCircumcircle(p3);
 
             // L'ipotesi di Delaunay è verificata solo se tutti i punti sono all'esterno delle rispettive circonferenze circoscritte
-            return !point1InsideCircle && !point2InsideCircle && !point3InsideCircle &&
-                   !point4InsideCircle && !point5InsideCircle && !point6InsideCircle;}
-         else
+            return !(point1InsideCircle || point2InsideCircle || point3InsideCircle ||
+                     point4InsideCircle || point5InsideCircle || point6InsideCircle);
+        } else {
             cerr << "Triangoli non adiacenti, non ha senso controllare l'ipotesi di Delaunay" << endl;
+            return -1;
         }
+    }
+
 void Triangle::flip(Triangle& triangle1){
             // Verifica se i due triangoli sono adiacenti
             int commonVerticesCount = 0;
@@ -410,6 +415,35 @@ void Triangulation::addAdjacentTriangle(int triangleId, int adjacentTriangleId) 
     triangles[adjacentTriangleId].adjacentTriangles.push_back(triangleId);
 }
 */
+std::vector<Point> Triangle::PointOnEdge(const Point& Q){
+std::vector<Point> edge;
+
+if (Q.isPointOnSegment(p1,p2))
+{   edge.push_back(p1);
+    edge.push_back(p2);
+
+
+}
+else if (Q.isPointOnSegment(p1,p3))
+{
+    edge.push_back(p1);
+    edge.push_back(p3);
+
+}
+else if(Q.isPointOnSegment(p3,p2))
+{    edge.push_back(p3);
+    edge.push_back(p2);
+
+
+}
+else
+{Point point;
+    edge.push_back(point);
+    edge.push_back(point);
+
+}
+return edge;}
+
 int Triangulation::PointInsideTriangulation(const Point& Q) {
     // Itera attraverso tutti i triangoli della triangolazione
     for (const Triangle& triangle : DelunayTriangles) {
@@ -418,7 +452,8 @@ int Triangulation::PointInsideTriangulation(const Point& Q) {
         }
         // Verifica se il punto Q è interno al triangolo corrente
         else if (triangle.isPointInsideTriangle(Q)) {
-            return triangle.id;  //  restituisco l'id del triangolo a cui è interno
+
+        return triangle.id;  //  restituisco l'id del triangolo a cui è interno
         }
     }
 
@@ -442,6 +477,7 @@ void Triangulation::createSubtriangulation(const Point& Q, int triangleId) {
 
     // Crea il nuovo triangolo collegando il punto Q ai vertici di T
     Triangle newTriangle(Q, T.p1, T.p2,triangleId );
+    newTriangle.SortVertices();
 
     // Aggiungi il nuovo triangolo alla lista dei triangoli
     DelunayTriangles[triangleId] = newTriangle;
@@ -458,12 +494,15 @@ void Triangulation::createSubtriangulation(const Point& Q, int triangleId) {
     // Aggiungi gli altri due triangoli della sottotriangolazione alla lista dei triangoli
     Triangle t1(Q, T.p2, T.p3,triangleId +1);
     Triangle t2(Q, T.p3, T.p1,triangleId +2);
+    t1.SortVertices();
+    t2.SortVertices();
     addTriangle(t1);
     addTriangle(t2);
 
 
     // Aggiorna la lista di adiacenza per i nuovi triangoli
-    for(size_t i = 0; i < adjacencyList[T.id].size(); i++)
+    unsigned int n = adjacencyList[T.id].size();
+    for(size_t i = 0; i < n; i++)
     {Triangle triangle;
         triangle=findTriangleById(adjacencyList[T.id][i]);
         if(triangle.isAdjacent(newTriangle)){
@@ -484,7 +523,8 @@ void Triangulation::createSubtriangulation(const Point& Q, int triangleId) {
 
  void Triangulation::connectPointToVertices(const Point& Q){
 // Il punto Q è esterno alla triangolazione, unisce Q con tutti i vertici escludendo le intersezioni
-for (size_t i = 0; i < DelunayTriangles.size(); i++) {
+unsigned int n = DelunayTriangles.size();
+for (size_t i = 0; i < n ; i++) {
     Triangle& triangle = DelunayTriangles[i];
     std::vector<Point> intersection = triangle.findIntersection(Q);
 
@@ -517,26 +557,98 @@ for (size_t i = 0; i < DelunayTriangles.size(); i++) {
     }
     else{
         if (triangle.p1.isPointInVector(intersection)){
-           addTriangle(Triangle(Q,triangle.p2,triangle.p3,triangle.id +1));
-           addAdjacentTriangle(triangle.id +1, triangle.id);
+            Triangle t1(Q,triangle.p2,triangle.p3,triangle.id +1);
+            t1.SortVertices();
+           addTriangle(t1);
+           addAdjacentTriangle(t1.id, triangle.id);
         }
         else if (triangle.p2.isPointInVector(intersection)){
-            addTriangle(Triangle(Q,triangle.p1,triangle.p3,triangle.id +1));
-            addAdjacentTriangle(triangle.id +1, triangle.id);
+            Triangle t2(Q,triangle.p1,triangle.p3,triangle.id +1);
+            t2.SortVertices();
+            addTriangle(t2);
+            addAdjacentTriangle(t2.id, triangle.id);
          }
         else {
-              addTriangle(Triangle(Q,triangle.p1,triangle.p2,triangle.id +1));
-              addAdjacentTriangle(triangle.id +1, triangle.id);
+              Triangle t3(Q,triangle.p1,triangle.p2,triangle.id +1);
+              t3.SortVertices();
+              addTriangle(t3);
+              addAdjacentTriangle(t3.id, triangle.id);
                 }
 
 
 
 }}}
+void Triangulation::connectPointOnEdge( const Triangle& t,const Point& Q, const vector<Point> edge){
+    if (!t.p1.isPointInVector(edge)){
+        Triangle t1(Q,t.p1,t.p2,t.id );
+        t1.SortVertices();
+       DelunayTriangles[t.id] =t1;
+       Triangle t2(Q,t.p1,t.p3,t.id +1);
+       t2.SortVertices();
+       addTriangle(t2);
+
+    }
+    else if (!t.p2.isPointInVector(edge)){
+        Triangle t1(Q,t.p2,t.p1,t.id );
+        t1.SortVertices();
+        DelunayTriangles[t.id] =t1;//sostituisco
+        Triangle t2(Q,t.p2,t.p3,t.id+1 );
+        t2.SortVertices();
+        addTriangle(t2);//aggiungo
+     }
+    else {
+        Triangle t1(Q,t.p3,t.p1,t.id );
+        t1.SortVertices();
+          DelunayTriangles[t.id] =t1;
+          Triangle t2(Q,t.p3,t.p2,t.id+1);
+          t2.SortVertices();
+          addTriangle(t2);
+
+            }
+    //aggiorno adiacenza
+    addAdjacentTriangle(t.id,t.id+1);
+    unsigned int n = adjacencyList[t.id].size();
+    for(size_t i = 0; i < n; i++)
+    {Triangle triangle;
+        triangle=findTriangleById(adjacencyList[t.id][i]);
+        if(triangle.isAdjacent(DelunayTriangles[t.id])){
+            addAdjacentTriangle(triangle.id,DelunayTriangles[t.id].id);}
+        if(triangle.isAdjacent(DelunayTriangles[t.id+1])){
+            addAdjacentTriangle(triangle.id,DelunayTriangles[t.id+1].id);}
+
+}
+}
+
+ void Triangulation::connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, vector<Point>& edge){
+     //connetto il punto al vertice opposto al lato
+     connectPointOnEdge(triangle,Q, edge); //da un triangolo creo due sottotriangoli
+
+     //se è su un lato è "interno" a due triangoli adiacenti su quel lato,
+     //cerco l'altro triangolo
+     unsigned int n = adjacencyList[triangle.id].size();
+     for(size_t i = 0; i < n ; i++)
+     {
+         Triangle t(findTriangleById(adjacencyList[triangle.id][i]));
+         if(t.isPointInsideTriangle(Q)){
+             connectPointOnEdge(t,Q, edge); //da un triangolo creo due sottotriangoli
+
+         }
+     }
+
+ }
+
 
 void Triangulation::addPointToTriangulation(const Point& Q) {
 
     if (PointInsideTriangulation(Q)>0) {
         int triangleId = PointInsideTriangulation(Q);
+        vector<Point> edge;
+        Triangle triangle(findTriangleById(triangleId));
+         edge=triangle.PointOnEdge(Q); //lato in cui giace il punto Q
+        if (edge[0]!=Point() && edge[1]!=Point()){//se è interno è il vettore (0,0)
+            connectPointOnEdgeToTriangulation(triangle,Q,edge);
+        }
+        else
         createSubtriangulation(Q, triangleId);
     } else {
         connectPointToVertices(Q);
@@ -544,31 +656,43 @@ void Triangulation::addPointToTriangulation(const Point& Q) {
     }
 }
 
-Triangulation DelunayTriangulation(const std::vector<Point>& points){
-    Triangle triangle;
+Triangulation DelunayTriangulation(const std::vector<Point>& points) {
+    Triangle triangle_default;
     Triangle triangle_max;
 
-    triangle_max = triangle.findMaximumTriangle(points);
+    triangle_max = triangle_default.findMaximumTriangle(points);
+
     std::vector<Triangle> DelunayTriangles;
     DelunayTriangles.push_back(triangle_max);
     Triangulation triangulation(DelunayTriangles);
 
     std::vector<Point> pointsCopy;
-    pointsCopy= points;
-    for (size_t i=0; i< pointsCopy.size(); i++){
+    pointsCopy = points;
+
+    pointsCopy.erase(std::remove(pointsCopy.begin(), pointsCopy.end(), triangle_max.p1), pointsCopy.end());
+    pointsCopy.erase(std::remove(pointsCopy.begin(), pointsCopy.end(), triangle_max.p2), pointsCopy.end());
+    pointsCopy.erase(std::remove(pointsCopy.begin(), pointsCopy.end(), triangle_max.p3), pointsCopy.end());
+
+    for (size_t i = 0; i < pointsCopy.size(); i++) {
         triangulation.addPointToTriangulation(pointsCopy[i]);
-        for ( Triangle& triangle : DelunayTriangles) {
-            for(size_t i = 0; i < triangulation.adjacencyList[triangle.id].size(); i++)
-            {Triangle t;
-             t=triangulation.findTriangleById(triangulation.adjacencyList[triangle.id][i]);
-             if(!triangle.areTrianglesDelaunay(t)){
-                 triangle.flip(t);
-             }
 
+        for (size_t j = 0; j < triangulation.DelunayTriangles.size(); j++) {
+            Triangle& triangle = triangulation.DelunayTriangles[j];
 
+            if (triangulation.adjacencyList.find(triangle.id) != triangulation.adjacencyList.end()) {
+                const std::vector<unsigned int>& adjacency = triangulation.adjacencyList[triangle.id];
+                for (size_t k = 0; k < adjacency.size(); k++) {
+                    Triangle t;
+                    t = triangulation.findTriangleById(adjacency[k]);
+
+                    if (triangle.areTrianglesDelaunay(t) != 1) {
+                        triangle.flip(t);
+                    }
+                }
+            }
         }
     }
 
-}
-return triangulation;
+    return triangulation;
 }}
+

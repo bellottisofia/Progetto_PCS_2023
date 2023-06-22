@@ -47,12 +47,13 @@ public:
 
         Point& operator=(const Point& other);
         double calculateAngle( const Point& B, const Point& C);//funge
-        bool isPointOnSegment( const Point& q, const Point& r);
+        bool isPointOnSegment( const Point& q, const Point& r)const;
         //int calculateOrientation(const Point& p1, const Point& p2);
         //int calculateOrientation(const Point& p1, const Point& p2, const Point& p3);
         bool arePointsCollinear(const Point& p2,const Point& p3);
         bool doSegmentsIntersect( const Point& p2, const Point& p3, const Point& p4);
         bool isPointInVector( const std::vector<Point>& points)const;
+
 
 
 
@@ -139,9 +140,27 @@ inline Point operator+(const Point& p1, const Point& p2)
   // Function to find the triangle with the maximum area usando l'approccio divide et impera
   Triangle findMaximumTriangleArea(const std::vector<Point>& points, int start, int end);
   Triangle findMaximumTriangle(const std::vector<Point>& points);
-  bool areTrianglesDelaunay(Triangle& triangle1);
+  std::vector<Point> isPointOnEdge(const Point& Q);
+  int areTrianglesDelaunay(Triangle& triangle1);
   std::vector<Point> findIntersection(const Point& q);
   void flip(Triangle& triangle1);
+  std::vector<Point> PointOnEdge(const Point& Q);
+
+  bool operator!=(const Triangle& other) const {
+      // Confronta i vertici dei triangoli
+      return !(p1 == other.p1 && p2 == other.p2 && p3 == other.p3);
+  }
+
+  bool operator==(const Triangle& other) const {
+      // Confronta i vertici dei triangoli
+      return (p1 == other.p1 && p2 == other.p2 && p3 == other.p3);
+  }
+  void print() const {
+          std::cout << "Triangle " << id << ": ";
+          std::cout << p1 << ", ";
+          std::cout << p2 << ", ";
+          std::cout << p3 << std::endl;
+      }
 };
 
 
@@ -150,7 +169,8 @@ inline Point operator+(const Point& p1, const Point& p2)
             std::vector<Triangle> DelunayTriangles;
             std::unordered_map<unsigned int, std::vector<unsigned int>> adjacencyList;
             Triangulation() = default;
-            Triangulation(const std::vector<Triangle>& DelunayTriangles);
+            Triangulation(const std::vector<Triangle>& triangles);
+
 
             void addTriangle(const Triangle& triangle);
 
@@ -161,9 +181,33 @@ inline Point operator+(const Point& p1, const Point& p2)
             int PointInsideTriangulation(const Point& Q);
             void createSubtriangulation(const Point& Q, int triangleId);
             void connectPointToVertices(const Point& Q);
+            void connectPointOnEdge( const Triangle& t,const Point& Q, const vector<Point> edge);
+            void connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, vector<Point>& edge);
+
             void addPointToTriangulation(const Point&);
             Triangle findTriangleById(const unsigned int triangleId);
 
+            bool operator==(const std::vector<Triangle>& other) const {
+                    // Verifica le dimensioni dei vettori
+                    if (DelunayTriangles.size() != other.size()) {
+                        return false;
+                    }
+
+                    // Confronta gli elementi dei vettori
+                    for (size_t i = 0; i < DelunayTriangles.size(); i++) {
+                        if (DelunayTriangles[i] != other[i]) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+            void print() const {
+                    for (const auto& triangle : DelunayTriangles) {
+                        triangle.print();
+                    }
+                }
 
 
 };

@@ -27,7 +27,7 @@ bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulati
 
 int main()
 {
-    string inputFileName = "C:/Users/sofia/OneDrive - Politecnico di Torino/Desktop/delaunay/Projects/Delaunay/Dataset/Test1.csv"; // Inserisci il percorso del tuo file
+    string inputFileName = "../Delaunay/Dataset/Test1.csv"; // Inserisci il percorso del tuo file
     vector<Point> points;
 
 
@@ -46,7 +46,7 @@ int main()
 */
     Triangulation Delunaytriangulation;
     Delunaytriangulation=DelunayTriangulation( points);
-    string outputFileName = "./Delaunay.txt";
+    string outputFileName = "../Delaunay.txt";
         if (!ExportResult(outputFileName, Delunaytriangulation))
         {
             cerr << "Something went wrong with export" << endl;
