@@ -45,7 +45,9 @@ int main()
     cout << triangle_max;
 */
     Triangulation Delunaytriangulation;
-    Delunaytriangulation=DelunayTriangulation( points);
+    MinMax minMax;
+    minMax=findMinMax(points);
+    Delunaytriangulation=DelunayTriangulation( points,minMax);
     string outputFileName = "../Delaunay.txt";
         if (!ExportResult(outputFileName, Delunaytriangulation))
         {

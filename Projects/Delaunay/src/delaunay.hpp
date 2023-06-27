@@ -106,13 +106,18 @@ inline Point operator+(const Point& p1, const Point& p2)
     return Point(p1.x + p2.x, p1.y + p2.y, 0);
 }
 
+struct MinMax {
+    double minX;
+    double maxX;
+    double minY;
+    double maxY;
 
+};
+MinMax findMinMax(const std::vector<Point>& points);
   class Triangle {
       public:
       Point p1, p2, p3;
       unsigned int id;
-      std::vector<unsigned int> adjacentTriangles;
-
 
       Triangle() = default;
       Triangle(const Point& point1, const Point& point2, const Point& point3, const unsigned int& id); //testato
@@ -123,7 +128,7 @@ inline Point operator+(const Point& p1, const Point& p2)
       const Point& getVertexA() const ;
       const Point& getVertexB() const ;
       const Point& getVertexC() const ;
-
+      bool isPointOnEdge(const Point& Q) const;
 
 
       bool doSegmentsIntersect(const Point& Q);
@@ -140,6 +145,8 @@ inline Point operator+(const Point& p1, const Point& p2)
   // Function to find the triangle with the maximum area usando l'approccio divide et impera
   Triangle findMaximumTriangleArea(const std::vector<Point>& points, int start, int end);
   Triangle findMaximumTriangle(const std::vector<Point>& points);
+  bool checkTriangleOverlap(Triangle& other);
+  bool hasSharedPartialEdge(const Triangle& other);
   std::vector<Point> isPointOnEdge(const Point& Q);
   int areTrianglesDelaunay(Triangle& triangle1);
   std::vector<Point> findIntersection(const Point& q);
@@ -165,6 +172,10 @@ inline Point operator+(const Point& p1, const Point& p2)
 
 
         class Triangulation {
+        private:
+            unsigned int maxTriangleId = 0;
+
+
         public:
             std::vector<Triangle> DelunayTriangles;
             std::unordered_map<unsigned int, std::vector<unsigned int>> adjacencyList;
@@ -174,18 +185,35 @@ inline Point operator+(const Point& p1, const Point& p2)
 
             void addTriangle(const Triangle& triangle);
 
-            void addAdjacentTriangle(int triangleId, int adjacentTriangleId) ;
+            void addAdjacentTriangle(const unsigned int& triangleId,const unsigned int& adjacentTriangleId) ;
 
-            const std::vector<unsigned int>& getAdjacentTriangles(int triangleId) ;
+            const std::vector<unsigned int>& getAdjacentTriangles(const unsigned int& triangleId) ;
 
             int PointInsideTriangulation(const Point& Q);
-            void createSubtriangulation(const Point& Q, int triangleId);
+            void createSubtriangulation(const Point& Q, const unsigned int& triangleId);
             void connectPointToVertices(const Point& Q);
-            void connectPointOnEdge( const Triangle& t,const Point& Q, const vector<Point> edge);
-            void connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, vector<Point>& edge);
+            vector<int> connectPointOnEdge(const Triangle& t, const Point& Q, const vector<Point>& edge);
+            void connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, const vector<Point>& edge, const MinMax& minMax);
+            void flipTrianglesIfNotDelaunay();
+            void flipAndUpdateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
+            void updateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
+            bool areAllTrianglesDelaunay();
+            bool isBoundaryTriangle(const Triangle& triangle);
+            void addPointToTriangulation(const Point& Q, const MinMax& minMax);
+            Triangle findTriangleById(const unsigned int& triangleId);
+            void removeAdjacentTriangle(unsigned int triangleId1, unsigned int triangleId2);
+            bool isIdInAdjacency(unsigned int triangleId,vector<unsigned int> adjacency);
+            bool isBoundaryEdge(const Triangle& triangle,const vector<Point>& edge, const MinMax& minMax);
 
-            void addPointToTriangulation(const Point&);
-            Triangle findTriangleById(const unsigned int triangleId);
+            bool isBoundaryPoint(const Point& point, const MinMax& minMax);
+            inline unsigned int getMaxTriangleId() const {
+                    return maxTriangleId;
+                }
+
+                inline void incrementMaxTriangleId(unsigned int increment = 1) {
+                    maxTriangleId += increment;
+                }
+
 
             bool operator==(const std::vector<Triangle>& other) const {
                     // Verifica le dimensioni dei vettori
@@ -212,8 +240,8 @@ inline Point operator+(const Point& p1, const Point& p2)
 
 };
 
-Triangulation DelunayTriangulation(const std::vector<Point>& points);
-
+Triangulation DelunayTriangulation(const std::vector<Point>& points, const MinMax& minMax);
+void findMinMax(const std::vector<Point>& sortedPoints, double& minX, double& maxX, double& minY, double& maxY);
 }
 
 #endif // __DELAUNAY_H
