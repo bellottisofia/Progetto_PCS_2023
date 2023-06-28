@@ -133,7 +133,7 @@ MinMax findMinMax(const std::vector<Point>& points);
 
       bool doSegmentsIntersect(const Point& Q);
 
-      bool isVertexShared(const Point& vertex); //testato
+      bool isVertexShared(const Point& vertex) const; //testato
       bool isAdjacent(const Triangle& other);  //testato
 
 
@@ -154,14 +154,23 @@ MinMax findMinMax(const std::vector<Point>& points);
   std::vector<Point> PointOnEdge(const Point& Q);
 
   bool operator!=(const Triangle& other) const {
-      // Confronta i vertici dei triangoli
-      return !(p1 == other.p1 && p2 == other.p2 && p3 == other.p3);
+    // Confronta i vertici dei triangoli
+    unsigned int shared = 0;
+    if (isVertexShared(other.p1)) shared++;
+    if (isVertexShared(other.p2)) shared++;
+    if (isVertexShared(other.p3)) shared++;
+    return shared < 3;
   }
 
   bool operator==(const Triangle& other) const {
-      // Confronta i vertici dei triangoli
-      return (p1 == other.p1 && p2 == other.p2 && p3 == other.p3);
+    // Confronta i vertici dei triangoli
+    unsigned int shared = 0;
+    if (isVertexShared(other.p1)) shared++;
+    if (isVertexShared(other.p2)) shared++;
+    if (isVertexShared(other.p3)) shared++;
+    return shared > 2 ;
   }
+
   void print() const {
           std::cout << "Triangle " << id << ": ";
           std::cout << p1 << ", ";
@@ -192,8 +201,8 @@ MinMax findMinMax(const std::vector<Point>& points);
             int PointInsideTriangulation(const Point& Q);
             void createSubtriangulation(const Point& Q, const unsigned int& triangleId);
             void connectPointToVertices(const Point& Q);
-            vector<int> connectPointOnEdge(const Triangle& t, const Point& Q, const vector<Point>& edge);
-            void connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, const vector<Point>& edge, const MinMax& minMax);
+            void connectPointOnEdgeInside(Triangle& t, const Point& Q, const vector<Point>& edge);
+            void connectPointOnEdgeToTriangulation(Triangle& triangle, const Point& Q, const vector<Point>& edge, const MinMax& minMax);
             void flipTrianglesIfNotDelaunay();
             void flipAndUpdateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
             void updateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);

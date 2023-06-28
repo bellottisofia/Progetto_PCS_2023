@@ -115,9 +115,9 @@ bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulati
 
         // Write the Triangle object's data to the file
         file << "Triangle " << triangle.id << ":" ;
-        file << "Vertex 1: (" << triangle.p1.x << ", " << triangle.p1.y << "); " ;
-        file << "Vertex 2: (" << triangle.p2.x << ", " << triangle.p2.y << ");" ;
-        file << "Vertex 3: (" << triangle.p3.x << ", " << triangle.p3.y << ") "  << endl;
+        file << "Vertex " << triangle.p1.id << ": (" << triangle.p1.x << ", " << triangle.p1.y << "); " ;
+        file << "Vertex " << triangle.p2.id << ": (" << triangle.p2.x << ", " << triangle.p2.y << ");" ;
+        file << "Vertex " << triangle.p3.id << ": (" << triangle.p3.x << ", " << triangle.p3.y << ") "  << endl;
     }
 
     file.close();

@@ -154,7 +154,7 @@ bool Triangle::isPointInsideTriangle(const Point& Q)const {
 }
 
 
-bool Triangle::isVertexShared(const Point& vertex)  {
+bool Triangle::isVertexShared(const Point& vertex) const {
     return (vertex == p1) || (vertex == p2) || (vertex == p3);
 }
 
@@ -309,7 +309,7 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
     bool Point::isPointOnSegment(const Point& p,  const Point& r) const{
         // Controlla se il punto Q ha la stessa pendenza rispetto ai punti p e r
         double crossProduct = (y - p.y) * (r.x - p.x) - (x - p.x) * (r.y - p.y);
-        if (std::abs(crossProduct) > std::numeric_limits<double>::epsilon()) {
+        if (std::abs(crossProduct) > 1e-12) {
             return false;  // I punti non hanno la stessa pendenza, quindi Q non giace sul segmento
         }
 
@@ -433,8 +433,7 @@ Triangle Triangle::findMaximumTriangleArea(const std::vector<Point>& points, int
                 return 0;    // 0 = i non triangoli sono di delaunay
             }
         } else {
-            cerr << "Triangoli non adiacenti, non ha senso controllare l'ipotesi di Delaunay" << endl;
-            return -1;
+                return -1;
         }
     }
 
@@ -733,23 +732,27 @@ void Triangulation::connectPointToVertices(const Point& Q) {
 
 bool Triangle::checkTriangleOverlap(Triangle& other) {
     if(isAdjacent(other)){
-    // Verifica l'intersezione dei segmenti tra i triangoli
-        int intersectCount = 0;
+        // Verifica l'intersezione dei segmenti tra i triangoli
+            int intersectCount = 0;
 
-        // Verifica l'intersezione dei segmenti tra i lati del triangolo corrente e gli altri lati
-        if ( p1.doSegmentsIntersect(p2, other.p2, other.p3) && ((p1 != other.p2) && (p1 != other.p3) && (p2 != other.p2) && (p2 != other.p3))) intersectCount++;
-        if ( p1.doSegmentsIntersect(p2, other.p1, other.p2) && ((p1 != other.p1) && (p1 != other.p2) && (p2 != other.p1) && (p2 != other.p2))) intersectCount++;
-        if ( p1.doSegmentsIntersect(p2, other.p1, other.p3) && ((p1 != other.p1) && (p1 != other.p3) && (p2 != other.p1) && (p2 != other.p3))) intersectCount++;
-        if ( p2.doSegmentsIntersect(p3, other.p2, other.p3) && ((p2 != other.p2) && (p2 != other.p3) && (p3 != other.p2) && (p3 != other.p3))) intersectCount++;
-        if ( p2.doSegmentsIntersect(p3, other.p1, other.p2) && ((p2 != other.p1) && (p2 != other.p2) && (p3 != other.p1) && (p3 != other.p2))) intersectCount++;
-        if ( p2.doSegmentsIntersect(p3, other.p1, other.p3) && ((p2 != other.p1) && (p2 != other.p3) && (p3 != other.p1) && (p3 != other.p3))) intersectCount++;
-        if ( p3.doSegmentsIntersect(p1, other.p2, other.p3) && ((p3 != other.p2) && (p3 != other.p3) && (p1 != other.p2) && (p1 != other.p3))) intersectCount++;
-        if ( p3.doSegmentsIntersect(p1, other.p1, other.p2) && ((p3 != other.p1) && (p3 != other.p2) && (p1 != other.p1) && (p1 != other.p2))) intersectCount++;
-        if ( p3.doSegmentsIntersect(p1, other.p1, other.p3) && ((p3 != other.p1) && (p3 != other.p3) && (p1 != other.p1) && (p1 != other.p3))) intersectCount++;
-        // Restituisci true se ci sono almeno due intersezioni, altrimenti false
-        return intersectCount >= 1;}
-    else{return 0;}
+            // Verifica l'intersezione dei segmenti tra i lati del triangolo corrente e gli altri lati
+            if ( p1.doSegmentsIntersect(p2, other.p2, other.p3) && ((p1 != other.p2) && (p1 != other.p3) && (p2 != other.p2) && (p2 != other.p3))) intersectCount++;
+            if ( p1.doSegmentsIntersect(p2, other.p1, other.p2) && ((p1 != other.p1) && (p1 != other.p2) && (p2 != other.p1) && (p2 != other.p2))) intersectCount++;
+            if ( p1.doSegmentsIntersect(p2, other.p1, other.p3) && ((p1 != other.p1) && (p1 != other.p3) && (p2 != other.p1) && (p2 != other.p3))) intersectCount++;
+            if ( p2.doSegmentsIntersect(p3, other.p2, other.p3) && ((p2 != other.p2) && (p2 != other.p3) && (p3 != other.p2) && (p3 != other.p3))) intersectCount++;
+            if ( p2.doSegmentsIntersect(p3, other.p1, other.p2) && ((p2 != other.p1) && (p2 != other.p2) && (p3 != other.p1) && (p3 != other.p2))) intersectCount++;
+            if ( p2.doSegmentsIntersect(p3, other.p1, other.p3) && ((p2 != other.p1) && (p2 != other.p3) && (p3 != other.p1) && (p3 != other.p3))) intersectCount++;
+            if ( p3.doSegmentsIntersect(p1, other.p2, other.p3) && ((p3 != other.p2) && (p3 != other.p3) && (p1 != other.p2) && (p1 != other.p3))) intersectCount++;
+            if ( p3.doSegmentsIntersect(p1, other.p1, other.p2) && ((p3 != other.p1) && (p3 != other.p2) && (p1 != other.p1) && (p1 != other.p2))) intersectCount++;
+            if ( p3.doSegmentsIntersect(p1, other.p1, other.p3) && ((p3 != other.p1) && (p3 != other.p3) && (p1 != other.p1) && (p1 != other.p3))) intersectCount++;
+
+            if ((other.isPointInsideTriangle(p1) || other.isPointInsideTriangle(p2) ||  other.isPointInsideTriangle(p3))) intersectCount++;
+            if ((isPointInsideTriangle(other.p1) || isPointInsideTriangle(other.p2) ||  isPointInsideTriangle(other.p3))) intersectCount++;
+            // Restituisci true se ci sono almeno due intersezioni, altrimenti false
+            return intersectCount >= 1;}
+        else{return 0;}
 }
+
 
 bool Triangulation::isBoundaryTriangle(const Triangle& triangle) {
     unsigned int numAdjacentTriangles = adjacencyList[triangle.id].size();
@@ -762,116 +765,151 @@ bool Triangulation::isBoundaryTriangle(const Triangle& triangle) {
     return false; // The triangle is not a boundary triangle
 }
 
-vector<int> Triangulation::connectPointOnEdge(const Triangle& t, const Point& Q, const vector<Point>& edge) {
+void Triangulation::connectPointOnEdgeInside(Triangle& t, const Point& Q, const vector<Point>& edge) {
     vector<unsigned int> oldadj = adjacencyList[t.id];
     Triangle t1;
     Triangle t2;
-    if (!t.p1.isPointInVector(edge)) {
-        t1 = Triangle(Q, t.p1, t.p2, t.id);
-        t1.SortVertices();
-        t2 = Triangle(Q, t.p1, t.p3, getMaxTriangleId() + 1);
-        t2.SortVertices();
+    for (unsigned int i : oldadj){
 
-    } else if (!t.p2.isPointInVector(edge)) {
-        t1 = Triangle(Q, t.p2, t.p1, t.id);
-        t1.SortVertices();
-        t2 = Triangle(Q, t.p2, t.p3, getMaxTriangleId() + 1);
-        t2.SortVertices();
+        Triangle adjT = findTriangleById(i);
+        Point q1;
+        Point q2;
 
-    } else {
-        t1 = Triangle(Q, t.p3, t.p1, t.id);
-        t1.SortVertices();
-        t2 = Triangle(Q, t.p3, t.p2, getMaxTriangleId() + 1);
-        t2.SortVertices();
+        if (((adjT.p1 == edge[0]) || (adjT.p2 == edge[0]) || (adjT.p3 == edge[0])) && ((adjT.p1 == edge[1]) || (adjT.p2 == edge[1]) || (adjT.p3 == edge[1]))) {
+           if(t.p1 != edge[0] && t.p1 != edge[1]) q1 = t.p1;
+           else if (t.p2 != edge[0] && t.p2 != edge[1]) q1 = t.p2;
+           else q1 = t.p3;
 
-    }
+           if(adjT.p1 != edge[0] && adjT.p1 != edge[1]) q2 = adjT.p1;
+           else if (adjT.p2 != edge[0] && adjT.p2 != edge[1]) q2 = adjT.p2;
+           else q2 = adjT.p3;
 
-    // Replace the previous triangle with t1 in DelunayTriangles
-    DelunayTriangles[t.id] = t1;
+           t.p1 = edge[0]; t.p2 = Q; t.p3 = q1;
+           t1.p1 = edge[1]; t1.p2 = q1; t1.p3 = Q; t1.id = getMaxTriangleId() + 1;
+           t2.p1 = edge[0]; t2.p2 = Q; t2.p3 = q2; t2.id = getMaxTriangleId() + 2;
+           adjT.p1 = edge[1]; adjT.p2 = Q; adjT.p3 = q2;
+           t.SortVertices();
+           t1.SortVertices();
+           t2.SortVertices();
+           adjT.SortVertices();
+           // Replace the previous triangle with t1 in DelunayTriangles
+           DelunayTriangles[t.id] = t;
+           DelunayTriangles[adjT.id] = adjT;
 
-    // Add the new triangle t2 to DelunayTriangles
-    addTriangle(t2);
-    incrementMaxTriangleId();
+           addTriangle(t1);
+           addTriangle(t2);
+           incrementMaxTriangleId(2);
+           // Update adjacency
+           addAdjacentTriangle(t.id, t2.id);
+           addAdjacentTriangle(t.id, t1.id);
+           addAdjacentTriangle(adjT.id, t1.id);
+           addAdjacentTriangle(adjT.id, t2.id);
+           removeAdjacentTriangle(adjT.id, t.id);
 
-    // Update adjacency
-    addAdjacentTriangle(t1.id, t2.id);
+           // Update adjacency for t2
+           for (unsigned int adjId : oldadj) {
+
+               if (DelunayTriangles[adjId].isAdjacent(t2)){
+                   if (!(isIdInAdjacency(adjId, adjacencyList[t2.id])))
+                      addAdjacentTriangle(adjId, t2.id);
+               }
+               else removeAdjacentTriangle(adjId, t2.id);
+           }
+
+           // Update adjacency for t1
+           for (unsigned int adjId : oldadj) {
+
+                   if (DelunayTriangles[adjId].isAdjacent(t1)) {
+                       if (!(isIdInAdjacency(adjId, adjacencyList[t1.id])))
+
+                           addAdjacentTriangle(adjId, t1.id);
+
+               }
+                   else removeAdjacentTriangle(adjId, t1.id);
+           }
+
+           // Update adjacency for t1
+           for (unsigned int adjId : oldadj) {
+
+                   if (DelunayTriangles[adjId].isAdjacent(t) && adjId != t.id ) {
+                       if (!(isIdInAdjacency(adjId, adjacencyList[t.id])))
+
+                           addAdjacentTriangle(adjId, t.id);
+
+               }
+                   else removeAdjacentTriangle(adjId, t.id);
+           }
+
+           // Update adjacency for t1
+           for (unsigned int adjId : oldadj) {
+
+                   if (DelunayTriangles[adjId].isAdjacent(adjT) && adjId != adjT.id) {
+                       if (!(isIdInAdjacency(adjId, adjacencyList[adjT.id])))
+
+                           addAdjacentTriangle(adjId, adjT.id);
+
+               }
+                   else removeAdjacentTriangle(adjId, adjT.id);
+           }
 
 
-    // Update adjacency for t2
-    for (unsigned int adjId : oldadj) {
 
-            if (DelunayTriangles[adjId].isAdjacent(t2)) {
-
-                    addAdjacentTriangle(adjId, t2.id);
 
         }
     }
-    vector<int> ids;
-    int id1=t1.id;
-    int id2=t2.id;
-    ids.push_back(id1);
-    ids.push_back(id2);
-    return ids;
+
+
+
 }
 
 
-void Triangulation::connectPointOnEdgeToTriangulation(const Triangle& triangle, const Point& Q, const vector<Point>& edge, const MinMax& minMax) {
+void Triangulation::connectPointOnEdgeToTriangulation(Triangle& t, const Point& Q, const vector<Point>& edge, const MinMax& minMax) {
 
 
-    // Connect the point to the vertex opposite the edge
-    vector<int>ids;
-    ids=connectPointOnEdge(triangle, Q, edge); // Create two subtriangles from one triangle
+    if (!isBoundaryEdge(t, edge, minMax)) {
+        connectPointOnEdgeInside(t, Q,edge); // Create two subtriangles from one triangle
+    }
 
-    // If the triangle is not a boundary triangle, check the other adjacent triangle on the same edge
-    vector<int>ids2;
-    if (!isBoundaryEdge(triangle, edge, minMax)) {
+    else{
+        Point q1;
+        vector<unsigned int> oldadj = adjacencyList[t.id];
+        if(t.p1 != edge[0] && t.p1 != edge[1]) q1 = t.p1;
+        else if (t.p2 != edge[0] && t.p2 != edge[1]) q1 = t.p2;
+        else q1 = t.p3;
+        Triangle t1;
+        t.p1 = edge[0]; t.p2 = Q; t.p3 = q1;
+        t1.p1 = edge[1]; t1.p2 = Q; t1.p3 = q1; t1.id = getMaxTriangleId() + 1;
+        t.SortVertices();
+        t1.SortVertices();
+        DelunayTriangles[t.id] = t;
+        addTriangle(t1);
+        incrementMaxTriangleId();
+        addAdjacentTriangle(t.id,t1.id);
 
+        for (unsigned int adjId : oldadj) {
 
-            unsigned int n = adjacencyList[triangle.id].size();
-            for (size_t i = 0; i < n; i++) {
-                Triangle t = DelunayTriangles[ adjacencyList[triangle.id][i]];
+                if (DelunayTriangles[adjId].isAdjacent(t)) {
+                    if (!(isIdInAdjacency(adjId, adjacencyList[t.id])))
+                        addAdjacentTriangle(adjId, t.id);
 
-                vector<Point> edge2 = t.PointOnEdge(Q); //lato in cui giace il punto Q
-
-                if (edge2==edge){
-
-                    ids2=connectPointOnEdge(t, Q,edge); // Create two subtriangles from one triangle
-
-
-                        }
-                    }
-
-                }
-    std::vector<int> mergedIds;
-    mergedIds.reserve(ids.size() + ids2.size());
-    std::merge(ids.begin(), ids.end(), ids2.begin(), ids2.end(), std::back_inserter(mergedIds));
-    for (size_t i = 0; i < mergedIds.size(); i++) {
-        unsigned int triangleId = mergedIds[i];
-        int n=adjacencyList[triangleId].size();
-        vector<unsigned int> oldaj=adjacencyList[triangleId];
-        for (size_t k = 0; k < n; k++) {
-            unsigned int adjId = oldaj[k];
-            Triangle& adjTriangle = DelunayTriangles[adjId];
-
-            if (!DelunayTriangles[triangleId].isAdjacent(adjTriangle)) {
-                removeAdjacentTriangle(triangleId, adjId);
             }
+                else removeAdjacentTriangle(adjId, t.id);
         }
+
+        for (unsigned int adjId : oldadj) {
+
+                if (DelunayTriangles[adjId].isAdjacent(t1)) {
+                    if (!(isIdInAdjacency(adjId, adjacencyList[t1.id])))
+
+                        addAdjacentTriangle(adjId, t1.id);
+
+            }
+                else removeAdjacentTriangle(adjId, t1.id);
+        }
+
+
     }
-if (mergedIds.size()==4){
-if(DelunayTriangles[mergedIds[0]].isAdjacent(DelunayTriangles[mergedIds[2]])){
-    if(!isIdInAdjacency(mergedIds[0],adjacencyList[mergedIds[2]])){
-    addAdjacentTriangle(mergedIds[0],mergedIds[2]);}}
-if(DelunayTriangles[mergedIds[0]].isAdjacent(DelunayTriangles[mergedIds[3]])){
-    if(!isIdInAdjacency(mergedIds[0],adjacencyList[mergedIds[3]])){
-    addAdjacentTriangle(mergedIds[0],mergedIds[3]);}}
-if(DelunayTriangles[mergedIds[1]].isAdjacent(DelunayTriangles[mergedIds[2]])){
-    if(!isIdInAdjacency(mergedIds[1],adjacencyList[mergedIds[2]])){
-    addAdjacentTriangle(mergedIds[1],mergedIds[2]);}}
-if(DelunayTriangles[mergedIds[1]].isAdjacent(DelunayTriangles[mergedIds[3]])){
-    if(!isIdInAdjacency(mergedIds[1],adjacencyList[mergedIds[3]])){
-    addAdjacentTriangle(mergedIds[1],mergedIds[3]);}}
-}
+
 }
 
 
@@ -1108,7 +1146,7 @@ Triangulation DelunayTriangulation(const std::vector<Point>& points, const MinMa
         cout << point << endl;
     }
 
-    for (size_t i = 0; i <7; i++) {
+    for (size_t i = 0; i < pointsCopy.size(); i++) {
         triangulation.addPointToTriangulation(pointsCopy[i],minMax);
 
         unsigned int n = triangulation.DelunayTriangles.size();
