@@ -24,8 +24,8 @@ namespace ProjectLibrary
   }
 
 
-class Point {
-public:
+struct Point {
+
 
         double x;
         double y;
@@ -46,12 +46,10 @@ public:
 
 
         Point& operator=(const Point& other);
-        double calculateAngle( const Point& B, const Point& C);//funge
+        double calculateAngle( const Point& B, const Point& C);
         bool isPointOnSegment( const Point& q, const Point& r)const;
-        //int calculateOrientation(const Point& p1, const Point& p2);
-        //int calculateOrientation(const Point& p1, const Point& p2, const Point& p3);
         bool arePointsCollinear(const Point& p2,const Point& p3);
-        bool doSegmentsIntersect( const Point& p2, const Point& p3, const Point& p4);
+        bool doSegmentsIntersect( const Point& p2, const Point& p3, const Point& p4)const;
         bool isPointInVector( const std::vector<Point>& points)const;
 
 
@@ -59,8 +57,6 @@ public:
 
     };
 
-int calculateOrientation(const Point& p1, const Point& p2, const Point& p3);
-void SortVertices( Point& p1, Point& p2, Point& p3);
 inline double normSquared(const double& x, const double& y)
 {
   return x * x + y * y;
@@ -106,40 +102,37 @@ inline Point operator+(const Point& p1, const Point& p2)
     return Point(p1.x + p2.x, p1.y + p2.y, 0);
 }
 
-struct MinMax {
-    double minX;
-    double maxX;
-    double minY;
-    double maxY;
 
-};
-MinMax findMinMax(const std::vector<Point>& points);
   class Triangle {
-      public:
-      Point p1, p2, p3;
-      unsigned int id;
-
+      mutable Point p1, p2, p3;
+      mutable unsigned int id;
+  public:
       Triangle() = default;
-      Triangle(const Point& point1, const Point& point2, const Point& point3, const unsigned int& id); //testato
-      bool isInsideCircumcircle(const Point& point)const; //testato
-      bool isPointInsideTriangle(const Point& Q)const; //testato
+      Triangle(const Point& point1, const Point& point2, const Point& point3, const unsigned int& id);
+      bool isInsideCircumcircle(const Point& point)const;
+      bool isPointInsideTriangle(const Point& Q)const;
 
-      std::vector<Point> getVertices() const ;
-      const Point& getVertexA() const ;
-      const Point& getVertexB() const ;
-      const Point& getVertexC() const ;
-      bool isPointOnEdge(const Point& Q) const;
+      //std::vector<Point> getVertices() const ;
+      const Point getVertex1() const  ;
+      void setVertex1(const Point& newVertex1);
+      const Point getVertex2() const ;
+      void setVertex2(const Point& newVertex2) ;
+      const Point getVertex3() const ;
+      void setVertex3(const Point& newVertex3) ;
+       unsigned int getId() const ;
+      void setId(unsigned int newId) const;
+      bool isPointOnEdge(const Point& Q)const;
+      friend class Triangulation;
 
 
-      bool doSegmentsIntersect(const Point& Q);
 
-      bool isVertexShared(const Point& vertex) const; //testato
-      bool isAdjacent(const Triangle& other);  //testato
+      bool isVertexShared(const Point& vertex) const;
+      bool isAdjacent(const Triangle& other);
 
 
-      double calculateArea()const; //testato
+      double calculateArea()const;
       // ordina i vertici di un triangolo in senso antiorario
-       bool IsVerticesSort();  //testato
+       bool IsVerticesSort();
        void SortVertices();
 
   // Function to find the triangle with the maximum area usando l'approccio divide et impera
@@ -147,7 +140,7 @@ MinMax findMinMax(const std::vector<Point>& points);
   Triangle findMaximumTriangle(const std::vector<Point>& points);
   bool checkTriangleOverlap(Triangle& other);
   bool hasSharedPartialEdge(const Triangle& other);
-  std::vector<Point> isPointOnEdge(const Point& Q);
+
   int areTrianglesDelaunay(Triangle& triangle1);
   std::vector<Point> findIntersection(const Point& q);
   void flip(Triangle& triangle1);
@@ -186,12 +179,10 @@ MinMax findMinMax(const std::vector<Point>& points);
 
 
         public:
-            std::vector<Triangle> DelunayTriangles;
+            std::vector<Triangle> DelaunayTriangles;
             std::unordered_map<unsigned int, std::vector<unsigned int>> adjacencyList;
             Triangulation() = default;
             Triangulation(const std::vector<Triangle>& triangles);
-
-
             void addTriangle(const Triangle& triangle);
 
             void addAdjacentTriangle(const unsigned int& triangleId,const unsigned int& adjacentTriangleId) ;
@@ -202,37 +193,34 @@ MinMax findMinMax(const std::vector<Point>& points);
             void createSubtriangulation(const Point& Q, const unsigned int& triangleId);
             void connectPointToVertices(const Point& Q);
             void connectPointOnEdgeInside(Triangle& t, const Point& Q, const vector<Point>& edge);
-            void connectPointOnEdgeToTriangulation(Triangle& triangle, const Point& Q, const vector<Point>& edge, const MinMax& minMax);
+            void connectPointOnEdgeToTriangulation(Triangle& triangle, const Point& Q, const vector<Point>& edge);
             void flipTrianglesIfNotDelaunay();
             void flipAndUpdateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
             void updateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
             bool areAllTrianglesDelaunay();
             bool isBoundaryTriangle(const Triangle& triangle);
-            void addPointToTriangulation(const Point& Q, const MinMax& minMax);
-            Triangle findTriangleById(const unsigned int& triangleId);
+            void addPointToTriangulation(const Point& Q);
             void removeAdjacentTriangle(unsigned int triangleId1, unsigned int triangleId2);
             bool isIdInAdjacency(unsigned int triangleId,vector<unsigned int> adjacency);
-            bool isBoundaryEdge(const Triangle& triangle,const vector<Point>& edge, const MinMax& minMax);
-
-            bool isBoundaryPoint(const Point& point, const MinMax& minMax);
+            bool isBoundaryEdge(const Triangle& triangle, const std::vector<Point>& edge);
             inline unsigned int getMaxTriangleId() const {
                     return maxTriangleId;
                 }
 
-                inline void incrementMaxTriangleId(unsigned int increment = 1) {
-                    maxTriangleId += increment;
-                }
+            inline void incrementMaxTriangleId(unsigned int increment = 1) {
+                maxTriangleId += increment;
+            }
 
 
             bool operator==(const std::vector<Triangle>& other) const {
                     // Verifica le dimensioni dei vettori
-                    if (DelunayTriangles.size() != other.size()) {
+                    if (DelaunayTriangles.size() != other.size()) {
                         return false;
                     }
 
                     // Confronta gli elementi dei vettori
-                    for (size_t i = 0; i < DelunayTriangles.size(); i++) {
-                        if (DelunayTriangles[i] != other[i]) {
+                    for (size_t i = 0; i < DelaunayTriangles.size(); i++) {
+                        if (DelaunayTriangles[i] != other[i]) {
                             return false;
                         }
                     }
@@ -241,7 +229,7 @@ MinMax findMinMax(const std::vector<Point>& points);
                 }
 
             void print() const {
-                    for (const auto& triangle : DelunayTriangles) {
+                    for (const auto& triangle : DelaunayTriangles) {
                         triangle.print();
                     }
                 }
@@ -249,8 +237,7 @@ MinMax findMinMax(const std::vector<Point>& points);
 
 };
 
-Triangulation DelunayTriangulation(const std::vector<Point>& points, const MinMax& minMax);
-void findMinMax(const std::vector<Point>& sortedPoints, double& minX, double& maxX, double& minY, double& maxY);
+Triangulation DelaunayTriangulation(const std::vector<Point>& points);
 }
 
 #endif // __DELAUNAY_H

@@ -12,10 +12,10 @@ using namespace ProjectLibrary;
 
 std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
 {
-    os << "Triangle " << triangle.id << ":" << std::endl;
-    os << "Point 1 - x: " << triangle.p1.x << ", y: " << triangle.p1.y << ", id: " << triangle.p1.id << std::endl;
-    os << "Point 2 - x: " << triangle.p2.x << ", y: " << triangle.p2.y << ", id: " << triangle.p2.id << std::endl;
-    os << "Point 3 - x: " << triangle.p3.x << ", y: " << triangle.p3.y << ", id: " << triangle.p3.id << std::endl;
+    os << "Triangle " << triangle.getId() << ":" << std::endl;
+    os << "Point 1 - x: " << triangle.getVertex1().x << ", y: " << triangle.getVertex1().y << ", id: " << triangle.getVertex1().id << std::endl;
+    os << "Point 2 - x: " << triangle.getVertex2().x << ", y: " << triangle.getVertex2().y << ", id: " << triangle.getVertex2().id << std::endl;
+    os << "Point 3 - x: " << triangle.getVertex3().x << ", y: " << triangle.getVertex3().y << ", id: " << triangle.getVertex3().id << std::endl;
     // Add any additional information you want to output about the triangle
     return os;
 }
@@ -37,19 +37,10 @@ int main()
       return -1;
     }
 
-    /*
-
-    for (const auto& point : points) {
-            std::cout << point << std::endl;
-        }
-    cout << triangle_max;
-*/
-    Triangulation Delunaytriangulation;
-    MinMax minMax;
-    minMax=findMinMax(points);
-    Delunaytriangulation=DelunayTriangulation( points,minMax);
+    Triangulation Delaunaytriangulation;
+    Delaunaytriangulation=DelaunayTriangulation( points);
     string outputFileName = "../Delaunay.txt";
-        if (!ExportResult(outputFileName, Delunaytriangulation))
+        if (!ExportResult(outputFileName, Delaunaytriangulation))
         {
             cerr << "Something went wrong with export" << endl;
             return -1;
@@ -108,16 +99,16 @@ bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulati
         return false;
     }
 
-    for (unsigned int i = 0; i < triangulation.DelunayTriangles.size(); i++)
+    for (unsigned int i = 0; i < triangulation.DelaunayTriangles.size(); i++)
     {
         // Get the current Triangle object
-        Triangle& triangle = triangulation.DelunayTriangles[i];
+        Triangle& triangle = triangulation.DelaunayTriangles[i];
 
         // Write the Triangle object's data to the file
-        file << "Triangle " << triangle.id << ":" ;
-        file << "Vertex " << triangle.p1.id << ": (" << triangle.p1.x << ", " << triangle.p1.y << "); " ;
-        file << "Vertex " << triangle.p2.id << ": (" << triangle.p2.x << ", " << triangle.p2.y << ");" ;
-        file << "Vertex " << triangle.p3.id << ": (" << triangle.p3.x << ", " << triangle.p3.y << ") "  << endl;
+        file << "Triangle " << triangle.getId() << ":" ;
+        file << "Vertex " << triangle.getVertex1().id << ": (" << triangle.getVertex1().x << ", " << triangle.getVertex1().y << "); " ;
+        file << "Vertex " << triangle.getVertex2().id << ": (" << triangle.getVertex2().x << ", " << triangle.getVertex2().y << ");" ;
+        file << "Vertex " << triangle.getVertex3().id << ": (" << triangle.getVertex3().x << ", " << triangle.getVertex3().y << ") "  << endl;
     }
 
     file.close();
