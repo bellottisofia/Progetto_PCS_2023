@@ -464,7 +464,7 @@ int Triangulation::PointInsideTriangulation(const Point& Q) {
     // Itera attraverso tutti i triangoli della triangolazione
     for (const Triangle& triangle : DelaunayTriangles) {
         if (!triangle.isInsideCircumcircle(Q)) {
-            //return -1;
+
         }
         // Verifica se il punto Q è interno al triangolo corrente
         else if (triangle.isPointInsideTriangle(Q)|| triangle.isPointOnEdge(Q)) {
@@ -692,11 +692,6 @@ void Triangulation::connectPointOnEdgeInside(Triangle& t, const Point& Q, const 
            if(adjT.getVertex1() != edge[0] && adjT.getVertex1() != edge[1]) q2 = adjT.getVertex1();
            else if (adjT.getVertex2() != edge[0] && adjT.getVertex2() != edge[1]) q2 = adjT.getVertex2();
            else q2 = adjT.getVertex3();
-/*
-           t.setVertex1(edge[0]); t.setVertex2(Q); t.setVertex3(q1);
-           t1.setVertex1(edge[1]); t1.setVertex2(q1); t1.setVertex3(Q); t1.setId(getMaxTriangleId() + 1);
-           t2.setVertex1(edge[0]); t2.setVertex2(Q); t2.setVertex3(q2); t2.setId(getMaxTriangleId() + 2);
-           adjT.setVertex1(edge[1]); adjT.setVertex2( Q); adjT.setVertex3(q2);*/
            t.p1=edge[0]; t.p2=Q; t.p3=q1;
            t1.p1=edge[1]; t1.p2=q1; t1.p3=Q; t1.setId(getMaxTriangleId() + 1);
            t2.p1=edge[0]; t2.p2=Q; t2.p3=q2; t2.setId(getMaxTriangleId() + 2);
@@ -705,7 +700,7 @@ void Triangulation::connectPointOnEdgeInside(Triangle& t, const Point& Q, const 
            t1.SortVertices();
            t2.SortVertices();
            adjT.SortVertices();
-           // Replace the previous triangle with t1 in DelaunayTriangles
+           // sostituisci il triangolo preesistente con t1 in DelaunayTriangles
            DelaunayTriangles[t.getId()] = t;
            DelaunayTriangles[adjT.getId()] = adjT;
 
@@ -753,7 +748,7 @@ void Triangulation::connectPointOnEdgeInside(Triangle& t, const Point& Q, const 
                    else removeAdjacentTriangle(adjId, t.getId());
            }
 
-           // Update adjacency for t1
+           // Update adjacency di t1
            for (unsigned int adjId : oldadj) {
 
                    if (DelaunayTriangles[adjId].isAdjacent(adjT) && adjId != adjT.getId()) {
@@ -886,7 +881,7 @@ void Triangulation::flipTrianglesIfNotDelaunay() {
 }
 
 
-void Triangulation::updateAdjacency(Triangle& triangle, Triangle& adjacentTriangle) {
+void Triangulation::updateAdjacency(const Triangle& triangle,const Triangle& adjacentTriangle) {
     // Concatena i due vettori
     vector<unsigned int> oldAdjacency;
     vector<unsigned int> adjacency(adjacencyList[triangle.getId()].begin(), adjacencyList[triangle.getId()].end());
@@ -1011,16 +1006,10 @@ Triangulation DelaunayTriangulation(const std::vector<Point>& points) {
     for (size_t i = 0; i < pointsCopy.size(); i++) {
         triangulation.addPointToTriangulation(pointsCopy[i]);
 
-        unsigned int n = triangulation.DelaunayTriangles.size();
-        for (size_t j = 0; j < n ; j++) {
-            //Triangle& triangle = triangulation.DelaunayTriangles[j];
-            // const std::vector<unsigned int>& adjacency = triangulation.adjacencyList[triangle.getId()];
-            triangulation.flipTrianglesIfNotDelaunay();
-        }
+        triangulation.flipTrianglesIfNotDelaunay();
 
-        // Rimuovi i triangoli duplicati
-        auto last = std::unique(triangulation.DelaunayTriangles.begin(), triangulation.DelaunayTriangles.end());
-        triangulation.DelaunayTriangles.erase(last, triangulation.DelaunayTriangles.end());
+
+
     }
 
     return triangulation;

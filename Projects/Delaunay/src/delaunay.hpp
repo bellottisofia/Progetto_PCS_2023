@@ -31,9 +31,6 @@ struct Point {
         double y;
         unsigned int id;
 
-        Point *succ = nullptr;
-        Point *prec = nullptr;
-
         static constexpr double geometricTol = 1.0e-12;
         static constexpr double geometricTol_Squared = max_tolerance(Point::geometricTol * Point::geometricTol,
                                                                      numeric_limits<double>::epsilon());
@@ -196,7 +193,7 @@ inline Point operator+(const Point& p1, const Point& p2)
             void connectPointOnEdgeToTriangulation(Triangle& triangle, const Point& Q, const vector<Point>& edge);
             void flipTrianglesIfNotDelaunay();
             void flipAndUpdateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
-            void updateAdjacency(Triangle& triangle, Triangle& adjacentTriangle);
+            void updateAdjacency(const Triangle& triangle, const Triangle& adjacentTriangle);
             bool areAllTrianglesDelaunay();
             bool isBoundaryTriangle(const Triangle& triangle);
             void addPointToTriangulation(const Point& Q);

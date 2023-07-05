@@ -105,10 +105,8 @@ bool ExportResult(const std::string& outputFilePath, ProjectLibrary::Triangulati
         Triangle& triangle = triangulation.DelaunayTriangles[i];
 
         // Write the Triangle object's data to the file
-        file << "Triangle " << triangle.getId() << ":" ;
-        file << "Vertex " << triangle.getVertex1().id << ": (" << triangle.getVertex1().x << ", " << triangle.getVertex1().y << "); " ;
-        file << "Vertex " << triangle.getVertex2().id << ": (" << triangle.getVertex2().x << ", " << triangle.getVertex2().y << ");" ;
-        file << "Vertex " << triangle.getVertex3().id << ": (" << triangle.getVertex3().x << ", " << triangle.getVertex3().y << ") "  << endl;
+        file << triangle<< endl;
+
     }
 
     file.close();
